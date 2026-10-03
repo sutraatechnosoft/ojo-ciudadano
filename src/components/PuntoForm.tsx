@@ -1,12 +1,15 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { CATEGORIAS, CATEGORIA_KEYS } from '@/lib/categorias'
 import Captcha from './Captcha'
 import { dentroDeVenezuela, MSG_FUERA_DE_VENEZUELA } from '@/lib/venezuela'
-import type { FormState, Punto } from '@/lib/types'
+import { BUCKET } from '@/lib/imagenes'
+import { comprimirImagen, MAX_BYTES_CLIENTE } from '@/lib/comprimirImagen'
+import { createBrowserClient } from '@/lib/supabase/browser'
+import type { FormState, Punto, SubidaState } from '@/lib/types'
 
 const LocationPicker = dynamic(() => import('./LocationPicker'), {
   ssr: false,
@@ -20,16 +23,87 @@ const inputCls =
 
 export default function PuntoForm({
   action,
+  subir,
   punto,
   submitLabel,
   publico = false,
 }: {
   action: (prev: FormState, formData: FormData) => Promise<FormState>
+  // Solo en el formulario público: pide la URL firmada para subir la foto directo a Storage.
+  subir?: (formData: FormData) => Promise<SubidaState>
   punto?: Punto
   submitLabel: string
   publico?: boolean
 }) {
-  const [state, formAction, pending] = useActionState<FormState, FormData>(action, {})
+  const [archivo, setArchivo] = useState<File | null>(null)
+  const [preview, setPreview] = useState<string | null>(null)
+  const [fotoMsg, setFotoMsg] = useState('')
+  const [procesando, setProcesando] = useState(false)
+  const [tactil, setTactil] = useState(false)
+  const camaraRef = useRef<HTMLInputElement>(null)
+  const archivoRef = useRef<HTMLInputElement>(null)
+
+  // La foto vive en el estado (ya comprimida), no en el FormData nativo del <input>.
+  const enviar = async (prev: FormState, formData: FormData): Promise<FormState> => {
+    if (publico) {
+      if (!archivo) return { error: 'Adjunta una foto como evidencia.' }
+      if (!subir) return { error: 'No se pudo preparar la subida de la foto.' }
+
+      // 1) Solo texto al servidor: valida captcha y límites, y devuelve una URL firmada.
+      const meta = new FormData()
+      for (const k of ['categoria', 'latitud', 'longitud', 'sitio_web', 'cf-turnstile-response']) {
+        const v = formData.get(k)
+        if (typeof v === 'string') meta.set(k, v)
+      }
+      meta.set('mime', archivo.type)
+      meta.set('tamano', String(archivo.size))
+      const r = await subir(meta)
+      if (r.error || !r.path || !r.token || !r.ticket) return { error: r.error ?? 'No se pudo preparar la subida.' }
+
+      // 2) La foto va directo del navegador a Supabase (no pasa por Vercel, sin límite de 4,5 MB).
+      const { error } = await createBrowserClient()
+        .storage.from(BUCKET)
+        .uploadToSignedUrl(r.path, r.token, archivo, { contentType: archivo.type })
+      if (error) return { error: 'No se pudo subir la foto. Revisa tu conexión e inténtalo de nuevo.' }
+
+      // 3) El servidor guarda el reporte con el ticket (la foto ya no viaja en la petición).
+      formData.set('ticket', r.ticket)
+    } else if (archivo) {
+      formData.set('foto', archivo) // panel admin: ya comprimida, pesa menos de 1 MB
+    }
+    return action(prev, formData)
+  }
+
+  const [state, formAction, pending] = useActionState<FormState, FormData>(enviar, {})
+
+  useEffect(() => {
+    setTactil(window.matchMedia('(pointer: coarse)').matches)
+  }, [])
+
+  useEffect(() => {
+    if (!archivo) return setPreview(null)
+    const url = URL.createObjectURL(archivo)
+    setPreview(url)
+    return () => URL.revokeObjectURL(url)
+  }, [archivo])
+
+  const onElegir = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target
+    const f = input.files?.[0]
+    input.value = '' // permite volver a elegir el mismo archivo
+    if (!f) return
+    setFotoMsg('')
+    setProcesando(true)
+    try {
+      const c = await comprimirImagen(f)
+      if (c.size > MAX_BYTES_CLIENTE) throw new Error('muy pesada')
+      setArchivo(c)
+    } catch {
+      setFotoMsg('No se pudo procesar la imagen. Usa una foto JPG, PNG o WebP.')
+    } finally {
+      setProcesando(false)
+    }
+  }
   const [lat, setLat] = useState(punto ? Number(punto.latitud).toFixed(6) : '')
   const [lon, setLon] = useState(punto ? Number(punto.longitud).toFixed(6) : '')
   const [geoMsg, setGeoMsg] = useState('')
@@ -148,28 +222,46 @@ export default function PuntoForm({
       </div>
 
       <div>
-        <label htmlFor="foto" className="mb-1 block text-sm font-medium text-slate-700">
+        <p className="mb-1 mt-0 text-sm font-medium text-slate-700">
           Foto {publico ? '(obligatoria)' : ''}{' '}
-          <span className="font-normal text-slate-500">(JPG, PNG o WebP, máx. 5 MB)</span>
-        </label>
-        {punto?.imagen_url && (
+          <span className="font-normal text-slate-500">(se reduce automáticamente antes de enviarla)</span>
+        </p>
+        {(preview || punto?.imagen_url) && (
           <div className="mb-2 flex items-center gap-3 text-sm text-slate-600">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={punto.imagen_url} alt="" className="h-16 w-16 rounded object-cover" />
-            <span>Foto actual. Sube otra para reemplazarla.</span>
+            <img src={preview ?? punto?.imagen_url ?? ''} alt="Vista previa de la foto" className="h-20 w-20 rounded object-cover" />
+            <span>{preview ? 'Foto lista para enviar.' : 'Foto actual. Sube otra para reemplazarla.'}</span>
           </div>
         )}
-        <input
-          id="foto" name="foto" type="file" required={publico} accept="image/jpeg,image/png,image/webp"
-          className="block w-full text-sm text-slate-600 file:mr-4 file:rounded file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:font-medium file:text-slate-800 hover:file:bg-slate-200"
-        />
+        <div className="flex flex-wrap gap-2">
+          {tactil && (
+            <button
+              type="button" onClick={() => camaraRef.current?.click()} disabled={procesando || pending}
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-100 disabled:opacity-60"
+            >
+              📷 Tomar foto
+            </button>
+          )}
+          <button
+            type="button" onClick={() => archivoRef.current?.click()} disabled={procesando || pending}
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-100 disabled:opacity-60"
+          >
+            {tactil ? '🖼️ Elegir de la galería' : 'Elegir archivo'}
+          </button>
+        </div>
+        {/* Sin atributo name: la foto se envía desde el estado, ya comprimida.
+            `capture` abre la cámara directamente en móvil; en PC se ignora. */}
+        <input ref={camaraRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden onChange={onElegir} />
+        <input ref={archivoRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={onElegir} />
+        {procesando && <p role="status" className="mb-0 mt-2 text-sm text-slate-600">Procesando la foto…</p>}
+        {fotoMsg && <p role="alert" className="mb-0 mt-2 text-sm text-red-700">{fotoMsg}</p>}
       </div>
 
       {publico && <Captcha resetKey={state} />}
 
       <div className="flex items-center gap-3">
         <button
-          type="submit" disabled={pending || latNum === null || lonNum === null}
+          type="submit" disabled={pending || procesando || latNum === null || lonNum === null || (publico && !archivo)}
           className="rounded-md bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-700 disabled:opacity-60"
         >
           {pending ? 'Enviando…' : submitLabel}

@@ -1,15 +1,15 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 export const BUCKET = 'puntos-fotos'
-const MAX_FILE_BYTES = 5 * 1024 * 1024 // 5 MB
-const ALLOWED: Record<string, string> = {
+export const MAX_FILE_BYTES = 5 * 1024 * 1024 // 5 MB
+export const EXT_POR_MIME: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
   'image/webp': 'webp',
 }
 
 // Verifica la firma real del archivo (no solo el tipo MIME declarado por el cliente).
-function matchesMagicBytes(buf: Uint8Array, mime: string) {
+export function matchesMagicBytes(buf: Uint8Array, mime: string) {
   if (mime === 'image/jpeg') return buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff
   if (mime === 'image/png')
     return [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].every((b, i) => buf[i] === b)
@@ -20,6 +20,10 @@ function matchesMagicBytes(buf: Uint8Array, mime: string) {
     )
   return false
 }
+
+export const MIME_POR_EXT: Record<string, string> = Object.fromEntries(
+  Object.entries(EXT_POR_MIME).map(([mime, ext]) => [ext, mime])
+)
 
 export function archivoDeForm(formData: FormData, key: string): File | null {
   const f = formData.get(key)
@@ -32,7 +36,7 @@ export async function subirImagen(
   file: File,
   carpeta: 'puntos' | 'reportes' | 'verificaciones'
 ): Promise<{ url?: string; error?: string }> {
-  const ext = ALLOWED[file.type]
+  const ext = EXT_POR_MIME[file.type]
   if (!ext) return { error: 'Formato no permitido. Usa JPG, PNG o WebP.' }
   if (file.size > MAX_FILE_BYTES) return { error: 'La imagen supera el máximo de 5 MB.' }
 

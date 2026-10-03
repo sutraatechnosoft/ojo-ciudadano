@@ -23,3 +23,6 @@ export type PuntoMapa = Pick<
 >
 
 export type FormState = { error?: string; ok?: boolean }
+
+// Respuesta de la acción que prepara la subida directa de la foto a Storage.
+export type SubidaState = { error?: string; path?: string; token?: string; ticket?: string }

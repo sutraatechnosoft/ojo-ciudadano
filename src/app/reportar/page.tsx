@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import PuntoForm from '@/components/PuntoForm'
-import { crearReporte } from './actions'
+import { crearReporte, solicitarSubida } from './actions'
 
 export default function ReportarPage() {
   return (
@@ -12,7 +12,7 @@ export default function ReportarPage() {
           Tu reporte no se publica de inmediato: un verificador irá al sitio para confirmar que el problema existe
           y solo entonces aparecerá en el mapa.
         </p>
-        <PuntoForm action={crearReporte} submitLabel="Enviar reporte" publico />
+        <PuntoForm action={crearReporte} subir={solicitarSubida} submitLabel="Enviar reporte" publico />
       </div>
     </main>
   )

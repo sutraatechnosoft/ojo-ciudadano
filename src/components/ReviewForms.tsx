@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import { reabrirPunto } from '@/app/admin/dashboard/actions'
+import { comprimirImagen } from '@/lib/comprimirImagen'
 import type { FormState, Estado } from '@/lib/types'
 
 type A = (prev: FormState, formData: FormData) => Promise<FormState>
@@ -24,7 +25,18 @@ export default function ReviewForms({
   verificar: A
   rechazar: A
 }) {
-  const [vState, vAction, vPending] = useActionState<FormState, FormData>(verificar, {})
+  const verificarConFoto: A = async (prev, formData) => {
+    const f = formData.get('foto_verificacion')
+    if (f instanceof File && f.size > 0) {
+      try {
+        formData.set('foto_verificacion', await comprimirImagen(f))
+      } catch {
+        return { error: 'No se pudo procesar la imagen. Usa una foto JPG, PNG o WebP.' }
+      }
+    }
+    return verificar(prev, formData)
+  }
+  const [vState, vAction, vPending] = useActionState<FormState, FormData>(verificarConFoto, {})
   const [rState, rAction, rPending] = useActionState<FormState, FormData>(rechazar, {})
 
   return (
