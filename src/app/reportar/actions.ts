@@ -46,7 +46,10 @@ export async function crearReporte(_prev: FormState, formData: FormData): Promis
     imagen_url: img.url,
     estado: 'pendiente',
   })
-  if (error) return { error: 'No se pudo guardar el reporte. Inténtalo de nuevo.' }
+  if (error) {
+    console.error('Error al guardar el reporte:', error.code, error.message)
+    return { error: 'No se pudo guardar el reporte. Inténtalo de nuevo.' }
+  }
 
   return { ok: true }
 }

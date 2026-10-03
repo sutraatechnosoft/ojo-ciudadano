@@ -35,7 +35,10 @@ export async function enviarContacto(_prev: FormState, formData: FormData): Prom
   await supabase.from('reportes_limite').insert({ ip_hash: ipHash })
 
   const { error } = await supabase.from('contactos').insert(parsed.data)
-  if (error) return { error: 'No se pudo enviar el mensaje. Inténtalo de nuevo.' }
+  if (error) {
+    console.error('Error al guardar el contacto:', error.code, error.message)
+    return { error: 'No se pudo enviar el mensaje. Inténtalo de nuevo.' }
+  }
 
   return { ok: true }
 }
