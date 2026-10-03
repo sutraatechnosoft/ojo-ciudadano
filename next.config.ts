@@ -14,7 +14,7 @@ const csp = [
   `default-src 'self'`,
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
   `style-src 'self' 'unsafe-inline'`,
-  `img-src 'self' data: blob: https://*.tile.openstreetmap.org${supabaseHost ? ` https://${supabaseHost}` : ''}`,
+  `img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org${supabaseHost ? ` https://${supabaseHost}` : ''}`,
   `font-src 'self' data:`,
   `connect-src 'self'${supabaseHost ? ` https://${supabaseHost} wss://${supabaseHost}` : ''}`,
   `object-src 'none'`,
