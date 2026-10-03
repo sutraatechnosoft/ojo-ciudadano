@@ -1,30 +1,12 @@
 'use client'
 
-import { useEffect } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, ZoomControl, useMap } from 'react-leaflet'
-import L from 'leaflet'
+import { MapContainer, TileLayer, Marker, Popup, ZoomControl } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { pinIcon } from '@/lib/leafletIcon'
 import { CATEGORIAS } from '@/lib/categorias'
 import CategoriaIcon from './CategoriaIcon'
 import { MAP_CENTER, MAP_ZOOM } from '@/lib/mapConfig'
 import type { PuntoMapa } from '@/lib/types'
-
-function FitToPoints({ puntos }: { puntos: PuntoMapa[] }) {
-  const map = useMap()
-  useEffect(() => {
-    if (puntos.length === 0) return
-    if (puntos.length === 1) {
-      map.setView([puntos[0].latitud, puntos[0].longitud], 15)
-      return
-    }
-    map.fitBounds(
-      L.latLngBounds(puntos.map((p) => [p.latitud, p.longitud] as [number, number])),
-      { padding: [70, 70], maxZoom: 16 }
-    )
-  }, [puntos, map])
-  return null
-}
 
 export default function MapView({ puntos }: { puntos: PuntoMapa[] }) {
   return (
@@ -35,7 +17,6 @@ export default function MapView({ puntos }: { puntos: PuntoMapa[] }) {
         maxZoom={19}
       />
       <ZoomControl position="topright" />
-      <FitToPoints puntos={puntos} />
       {puntos.map((p) => {
         const cat = CATEGORIAS[p.categoria] ?? CATEGORIAS.otro
         return (
