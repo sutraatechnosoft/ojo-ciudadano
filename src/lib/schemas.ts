@@ -3,19 +3,35 @@ import { CATEGORIA_KEYS } from './categorias'
 import { dentroDeVenezuela, MSG_FUERA_DE_VENEZUELA } from './venezuela'
 
 // OWASP A03: toda entrada se valida en el servidor.
-export const puntoSchema = z.object({
-  categoria: z.enum(CATEGORIA_KEYS, { errorMap: () => ({ message: 'Selecciona una categoría.' }) }),
-  latitud: z.coerce.number({ invalid_type_error: 'Latitud inválida.' }).min(-90).max(90),
-  longitud: z.coerce.number({ invalid_type_error: 'Longitud inválida.' }).min(-180).max(180),
-}).refine((p) => dentroDeVenezuela(p.latitud, p.longitud), { message: MSG_FUERA_DE_VENEZUELA, path: ['latitud'] })
+// Coordenadas: solo texto decimal simple (máx. 6 decimales). Rechaza notación científica, hex, espacios, etc.
+const coordenada = (nombre: string, min: number, max: number) =>
+  z
+    .string({ required_error: `${nombre} inválida.`, invalid_type_error: `${nombre} inválida.` })
+    .regex(/^-?\d{1,3}(\.\d{1,6})?$/, `${nombre} inválida.`)
+    .transform(Number)
+    .pipe(z.number().min(min, `${nombre} fuera de rango.`).max(max, `${nombre} fuera de rango.`))
+
+export const puntoSchema = z
+  .object({
+    categoria: z.enum(CATEGORIA_KEYS, { errorMap: () => ({ message: 'Selecciona una categoría.' }) }),
+    latitud: coordenada('Latitud', -90, 90),
+    longitud: coordenada('Longitud', -180, 180),
+  })
+  .refine((p) => dentroDeVenezuela(p.latitud, p.longitud), { message: MSG_FUERA_DE_VENEZUELA, path: ['latitud'] })
 
 export const idSchema = z.string().uuid()
 
+// Un campo repetido en la petición (parameter pollution) se trata como inválido.
+const unico = (formData: FormData, k: string) => {
+  const v = formData.getAll(k)
+  return v.length === 1 ? v[0] : undefined
+}
+
 export function leerPunto(formData: FormData) {
   return puntoSchema.safeParse({
-    categoria: formData.get('categoria'),
-    latitud: formData.get('latitud'),
-    longitud: formData.get('longitud'),
+    categoria: unico(formData, 'categoria'),
+    latitud: unico(formData, 'latitud'),
+    longitud: unico(formData, 'longitud'),
   })
 }
 

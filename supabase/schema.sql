@@ -21,7 +21,9 @@ create table if not exists public.puntos (
   nota_verificacion text check (nota_verificacion is null or char_length(nota_verificacion) <= 500),
   foto_verificacion_url text,
   created_at timestamptz not null default now(),
-  check (estado <> 'verificado' or verificado_en is not null)
+  check (estado <> 'verificado' or verificado_en is not null),
+  -- Rectángulo que contiene a Venezuela (la app valida el contorno exacto)
+  constraint puntos_coordenadas_venezuela check (latitud between 0.5 and 16 and longitud between -73.6 and -59.5)
 );
 
 create index if not exists puntos_estado_idx on public.puntos (estado);

@@ -13,10 +13,10 @@ const LocationPicker = dynamic(() => import('./LocationPicker'), {
   loading: () => <div className="h-full w-full bg-slate-100" />,
 })
 
+const readonlyCls = 'cursor-not-allowed bg-slate-100 text-slate-700'
+
 const inputCls =
   'w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-2 focus:outline-blue-600'
-
-const latNumOk = (v: string) => v !== '' && !Number.isNaN(Number(v))
 
 export default function PuntoForm({
   action,
@@ -30,11 +30,10 @@ export default function PuntoForm({
   publico?: boolean
 }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(action, {})
-  const [lat, setLat] = useState(punto ? String(punto.latitud) : '')
-  const [lon, setLon] = useState(punto ? String(punto.longitud) : '')
+  const [lat, setLat] = useState(punto ? Number(punto.latitud).toFixed(6) : '')
+  const [lon, setLon] = useState(punto ? Number(punto.longitud).toFixed(6) : '')
   const [geoMsg, setGeoMsg] = useState('')
 
-  const fuera = latNumOk(lat) && latNumOk(lon) && !dentroDeVenezuela(Number(lat), Number(lon))
   const latNum = lat !== '' && !Number.isNaN(Number(lat)) ? Number(lat) : null
   const lonNum = lon !== '' && !Number.isNaN(Number(lon)) ? Number(lon) : null
 
@@ -115,7 +114,6 @@ export default function PuntoForm({
           </button>
         </div>
         {geoMsg && <p role="status" className="my-1 text-sm text-amber-700">{geoMsg}</p>}
-        {fuera && <p role="alert" className="my-1 text-sm text-red-700">{MSG_FUERA_DE_VENEZUELA}</p>}
         <div className="h-64 overflow-hidden rounded-md border border-slate-300">
           <LocationPicker
             lat={latNum}
@@ -132,18 +130,21 @@ export default function PuntoForm({
           <div>
             <label htmlFor="latitud" className="mb-1 block text-sm font-medium text-slate-700">Latitud</label>
             <input
-              id="latitud" name="latitud" type="number" step="any" min={-90} max={90} required
-              value={lat} onChange={(e) => setLat(e.target.value)} className={inputCls}
+              id="latitud" name="latitud" type="text" readOnly aria-readonly="true" required
+              autoComplete="off" value={lat} placeholder="—" className={`${inputCls} ${readonlyCls}`}
             />
           </div>
           <div>
             <label htmlFor="longitud" className="mb-1 block text-sm font-medium text-slate-700">Longitud</label>
             <input
-              id="longitud" name="longitud" type="number" step="any" min={-180} max={180} required
-              value={lon} onChange={(e) => setLon(e.target.value)} className={inputCls}
+              id="longitud" name="longitud" type="text" readOnly aria-readonly="true" required
+              autoComplete="off" value={lon} placeholder="—" className={`${inputCls} ${readonlyCls}`}
             />
           </div>
         </div>
+        <p className="mb-0 mt-2 text-xs text-slate-500">
+          Las coordenadas se completan solas al marcar el punto en el mapa o con “Usar mi ubicación”.
+        </p>
       </div>
 
       <div>
@@ -168,7 +169,7 @@ export default function PuntoForm({
 
       <div className="flex items-center gap-3">
         <button
-          type="submit" disabled={pending}
+          type="submit" disabled={pending || latNum === null || lonNum === null}
           className="rounded-md bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-700 disabled:opacity-60"
         >
           {pending ? 'Enviando…' : submitLabel}
