@@ -41,7 +41,7 @@ export default async function Home() {
           <p className="m-0 mt-0.5 text-sm text-slate-600">
             {puntos.length === 0
               ? 'Aún no hay incidencia reportadas.'
-              : `${puntos.length} ${puntos.length === 1 ? 'incidencia verificada' : 'incidencias verificados'}`}
+              : `${puntos.length} ${puntos.length === 1 ? 'incidencia verificada' : 'incidencias verificadas'}`}
           </p>
         </div>
       </div>
