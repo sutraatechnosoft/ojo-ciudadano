@@ -6,10 +6,8 @@ let supabaseHost = ''
 try {
   supabaseHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').host
 } catch {
-  /* sin URL válida: se omite en la CSP */
 }
 
-// OWASP A05: Content-Security-Policy estricta
 const csp = [
   `default-src 'self'`,
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://challenges.cloudflare.com`,

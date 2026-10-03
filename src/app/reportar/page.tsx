@@ -9,8 +9,7 @@ export default function ReportarPage() {
         <Link href="/" className="text-base text-slate-600 hover:underline">← Volver al mapa</Link>
         <h1 className="mb-2 mt-3 text-2xl font-semibold text-slate-900">Reporte de Incidencia</h1>
         <p className="mb-6 text-base text-slate-600">
-          Tu reporte no se publica de inmediato: un verificador revisará la foto
-          y solo entonces aparecerá en el mapa.
+          Tu reporte no se publica de inmediato: un verificador validará la información.
         </p>
         <PuntoForm action={crearReporte} subir={solicitarSubida} submitLabel="Enviar reporte" publico />
       </div>
