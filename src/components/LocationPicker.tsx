@@ -15,7 +15,6 @@ function ClickHandler({ onPick }: { onPick: (lat: number, lon: number) => void }
   return null
 }
 
-// Recentra el mapa cuando el punto cambia desde fuera (GPS o coordenadas escritas).
 function Recenter({ lat, lon }: { lat: number | null; lon: number | null }) {
   const map = useMap()
   useEffect(() => {

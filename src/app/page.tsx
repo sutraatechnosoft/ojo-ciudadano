@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function Home() {
   const supabase = await createClient()
-  // Filtro explícito: aunque haya un admin con sesión, el mapa público solo muestra verificados.
+
   const { data, error } = await supabase
     .from('puntos')
     .select('id, categoria, latitud, longitud, imagen_url, verificado_en, nota_verificacion, foto_verificacion_url')
@@ -34,8 +34,8 @@ export default async function Home() {
           <h1 className="m-0 text-lg font-semibold text-slate-900">OJO Ciudadano</h1>
           <p className="m-0 mt-0.5 text-sm text-slate-600">
             {puntos.length === 0
-              ? 'Aún no hay problemas verificados.'
-              : `${puntos.length} ${puntos.length === 1 ? 'problema verificado' : 'problemas verificados'} en sitio`}
+              ? 'Aún no hay incidencia reportadas.'
+              : `${puntos.length} ${puntos.length === 1 ? 'incidencia verificada' : 'incidencias verificados'}`}
           </p>
         </div>
       </div>
