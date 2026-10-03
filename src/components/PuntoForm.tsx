@@ -107,6 +107,7 @@ export default function PuntoForm({
   const [lat, setLat] = useState(punto ? Number(punto.latitud).toFixed(6) : '')
   const [lon, setLon] = useState(punto ? Number(punto.longitud).toFixed(6) : '')
   const [geoMsg, setGeoMsg] = useState('')
+  const [ubicando, setUbicando] = useState(false)
 
   const latNum = lat !== '' && !Number.isNaN(Number(lat)) ? Number(lat) : null
   const lonNum = lon !== '' && !Number.isNaN(Number(lon)) ? Number(lon) : null
@@ -114,14 +115,19 @@ export default function PuntoForm({
   const usarMiUbicacion = () => {
     setGeoMsg('')
     if (!navigator.geolocation) return setGeoMsg('Tu navegador no permite obtener la ubicación.')
+    setUbicando(true)
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        setUbicando(false)
         if (!dentroDeVenezuela(pos.coords.latitude, pos.coords.longitude))
           return setGeoMsg('Tu ubicación actual está fuera de Venezuela. Marca el punto en el mapa.')
         setLat(pos.coords.latitude.toFixed(6))
         setLon(pos.coords.longitude.toFixed(6))
       },
-      () => setGeoMsg('No se pudo obtener tu ubicación. Haz clic en el mapa para marcarla.'),
+      () => {
+        setUbicando(false)
+        setGeoMsg('No se pudo obtener tu ubicación. Revisa el permiso de ubicación o toca el mapa para marcarla.')
+      },
       { enableHighAccuracy: true, timeout: 10000 }
     )
   }
@@ -176,17 +182,16 @@ export default function PuntoForm({
       </div>
 
       <div>
-        <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-          <p className="m-0 text-sm font-medium text-slate-700">
-            Ubicación <span className="font-normal text-slate-500">(haz clic en el mapa para marcarla)</span>
-          </p>
-          <button
-            type="button" onClick={usarMiUbicacion}
-            className="rounded border border-slate-300 px-2 py-1 text-sm text-slate-700 hover:bg-slate-100"
-          >
-            Usar mi ubicación
-          </button>
-        </div>
+        <p className="mb-2 mt-0 text-sm font-medium text-slate-700">
+          Ubicación <span className="font-normal text-slate-500">(usa tu ubicación o toca el mapa para marcarla)</span>
+        </p>
+        <button
+          type="button" onClick={usarMiUbicacion} disabled={ubicando}
+          className="mb-3 flex w-full items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-3 text-base font-semibold text-white shadow-sm hover:bg-blue-700 active:bg-blue-800 disabled:opacity-70 sm:w-auto"
+        >
+          <span aria-hidden="true">📍</span>
+          {ubicando ? 'Buscando tu ubicación…' : 'Usar mi ubicación'}
+        </button>
         {geoMsg && <p role="status" className="my-1 text-sm text-amber-700">{geoMsg}</p>}
         <div className="h-64 overflow-hidden rounded-md border border-slate-300">
           <LocationPicker
