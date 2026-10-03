@@ -32,7 +32,12 @@ export default function MapView({ puntos }: { puntos: PuntoMapa[] }) {
                 </span>
                 {p.imagen_url && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.imagen_url} alt={`Foto del reporte: ${cat.label}`} loading="lazy" className="my-2 h-36 w-full rounded object-cover" />
+                  <img
+                    src={p.imagen_url}
+                    alt={`Foto del reporte: ${cat.label}`}
+                    loading="lazy"
+                    className="my-2 block h-auto max-h-[45vh] w-full rounded object-contain"
+                  />
                 )}
                 <div className="rounded bg-emerald-50 p-2 text-xs text-emerald-900">
                   <strong>Verificado en sitio</strong>
@@ -40,7 +45,12 @@ export default function MapView({ puntos }: { puntos: PuntoMapa[] }) {
                   {p.nota_verificacion && <p className="mt-1 mb-0">{p.nota_verificacion}</p>}
                   {p.foto_verificacion_url && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={p.foto_verificacion_url} alt="Foto de la verificación" loading="lazy" className="mt-2 h-28 w-full rounded object-cover" />
+                    <img
+                      src={p.foto_verificacion_url}
+                      alt="Foto de la verificación"
+                      loading="lazy"
+                      className="mt-2 block h-auto max-h-[35vh] w-full rounded object-contain"
+                    />
                   )}
                 </div>
                 <p className="mt-2 mb-0 flex items-center justify-between gap-2 text-xs text-slate-500">
