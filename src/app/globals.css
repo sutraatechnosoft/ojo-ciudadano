@@ -17,5 +17,20 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
 }
 .pin svg { transform: rotate(45deg); }
 
-/* Zoom del mapa a la derecha, debajo del botón "Contacto" */
 .leaflet-top.leaflet-right { top: 46px; }
+
+
+.leaflet-container a.leaflet-popup-close-button {
+  top: 6px !important;
+  right: 6px !important;
+  width: 40px !important;
+  height: 40px !important;
+  font: 32px/40px Arial, sans-serif !important;
+  color: #334155 !important;
+  border-radius: 9999px;
+}
+
+.leaflet-container a.leaflet-popup-close-button:hover {
+  background: #f1f5f9;
+  color: #0f172a !important;
+}

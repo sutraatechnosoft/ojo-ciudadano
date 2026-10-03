@@ -31,7 +31,7 @@ export default function MapView({ puntos }: { puntos: PuntoMapa[] }) {
                   {cat.label}
                 </span>
                 {p.imagen_url && (
-                  // eslint-disable-next-line @next/next/no-img-element
+
                   <img
                     src={p.imagen_url}
                     alt={`Foto del reporte: ${cat.label}`}
