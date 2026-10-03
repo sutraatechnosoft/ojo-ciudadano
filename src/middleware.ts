@@ -49,3 +49,7 @@ export async function middleware(request: NextRequest) {
   if (completo) return isLogin || is2fa ? redirectTo('/admin/dashboard') : response
   return is2fa ? response : redirectTo('/admin/2fa')
 }
+
+export const config = {
+  matcher: ['/admin/:path*'],
+}
