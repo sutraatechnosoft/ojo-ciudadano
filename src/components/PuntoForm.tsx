@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { CATEGORIAS, CATEGORIA_KEYS } from '@/lib/categorias'
 import Captcha from './Captcha'
+import { dentroDeVenezuela, MSG_FUERA_DE_VENEZUELA } from '@/lib/venezuela'
 import type { FormState, Punto } from '@/lib/types'
 
 const LocationPicker = dynamic(() => import('./LocationPicker'), {
@@ -14,6 +15,8 @@ const LocationPicker = dynamic(() => import('./LocationPicker'), {
 
 const inputCls =
   'w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-2 focus:outline-blue-600'
+
+const latNumOk = (v: string) => v !== '' && !Number.isNaN(Number(v))
 
 export default function PuntoForm({
   action,
@@ -31,6 +34,7 @@ export default function PuntoForm({
   const [lon, setLon] = useState(punto ? String(punto.longitud) : '')
   const [geoMsg, setGeoMsg] = useState('')
 
+  const fuera = latNumOk(lat) && latNumOk(lon) && !dentroDeVenezuela(Number(lat), Number(lon))
   const latNum = lat !== '' && !Number.isNaN(Number(lat)) ? Number(lat) : null
   const lonNum = lon !== '' && !Number.isNaN(Number(lon)) ? Number(lon) : null
 
@@ -39,6 +43,8 @@ export default function PuntoForm({
     if (!navigator.geolocation) return setGeoMsg('Tu navegador no permite obtener la ubicación.')
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        if (!dentroDeVenezuela(pos.coords.latitude, pos.coords.longitude))
+          return setGeoMsg('Tu ubicación actual está fuera de Venezuela. Marca el punto en el mapa.')
         setLat(pos.coords.latitude.toFixed(6))
         setLon(pos.coords.longitude.toFixed(6))
       },
@@ -109,11 +115,14 @@ export default function PuntoForm({
           </button>
         </div>
         {geoMsg && <p role="status" className="my-1 text-sm text-amber-700">{geoMsg}</p>}
+        {fuera && <p role="alert" className="my-1 text-sm text-red-700">{MSG_FUERA_DE_VENEZUELA}</p>}
         <div className="h-64 overflow-hidden rounded-md border border-slate-300">
           <LocationPicker
             lat={latNum}
             lon={lonNum}
             onPick={(la, lo) => {
+              if (!dentroDeVenezuela(la, lo)) return setGeoMsg(MSG_FUERA_DE_VENEZUELA)
+              setGeoMsg('')
               setLat(String(la))
               setLon(String(lo))
             }}

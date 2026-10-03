@@ -1,12 +1,13 @@
 import { z } from 'zod'
 import { CATEGORIA_KEYS } from './categorias'
+import { dentroDeVenezuela, MSG_FUERA_DE_VENEZUELA } from './venezuela'
 
 // OWASP A03: toda entrada se valida en el servidor.
 export const puntoSchema = z.object({
   categoria: z.enum(CATEGORIA_KEYS, { errorMap: () => ({ message: 'Selecciona una categoría.' }) }),
   latitud: z.coerce.number({ invalid_type_error: 'Latitud inválida.' }).min(-90).max(90),
   longitud: z.coerce.number({ invalid_type_error: 'Longitud inválida.' }).min(-180).max(180),
-})
+}).refine((p) => dentroDeVenezuela(p.latitud, p.longitud), { message: MSG_FUERA_DE_VENEZUELA, path: ['latitud'] })
 
 export const idSchema = z.string().uuid()
 
