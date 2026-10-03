@@ -29,7 +29,7 @@ export default async function Home() {
 
       <div className="absolute left-3 top-3 z-[1000] flex max-w-[17rem] items-center gap-3 rounded-md bg-white/95 px-4 py-3 shadow">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" alt="" width={40} height={40} className="h-10 w-10 shrink-0 object-contain" />
+        <img src="/logo.png" alt="" width={60} height={60} className="h-10 w-10 shrink-0 object-contain" />
         <div>
           <h1 className="m-0 text-lg font-semibold text-slate-900">OJO Ciudadano</h1>
           <p className="m-0 mt-0.5 text-sm text-slate-600">
