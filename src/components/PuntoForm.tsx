@@ -247,7 +247,7 @@ export default function PuntoForm({
             type="button" onClick={() => archivoRef.current?.click()} disabled={procesando || pending}
             className="rounded-md border border-slate-300 px-4 py-3 text-base font-medium text-slate-800 hover:bg-slate-100 disabled:opacity-60"
           >
-            {tactil ? '🖼️ Elegir de la galería' : 'Elegir archivo'}
+            {tactil ? '🖼️ Elegir de galería' : 'Elegir archivo'}
           </button>
         </div>
 
