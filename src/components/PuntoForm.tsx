@@ -60,16 +60,14 @@ export default function PuntoForm({
       const r = await subir(meta)
       if (r.error || !r.path || !r.token || !r.ticket) return { error: r.error ?? 'No se pudo preparar la subida.' }
 
-      // 2) La foto va directo del navegador a Supabase (no pasa por Vercel, sin límite de 4,5 MB).
       const { error } = await createBrowserClient()
         .storage.from(BUCKET)
         .uploadToSignedUrl(r.path, r.token, archivo, { contentType: archivo.type })
       if (error) return { error: 'No se pudo subir la foto. Revisa tu conexión e inténtalo de nuevo.' }
 
-      // 3) El servidor guarda el reporte con el ticket (la foto ya no viaja en la petición).
       formData.set('ticket', r.ticket)
     } else if (archivo) {
-      formData.set('foto', archivo) // panel admin: ya comprimida, pesa menos de 1 MB
+      formData.set('foto', archivo) 
     }
     return action(prev, formData)
   }
