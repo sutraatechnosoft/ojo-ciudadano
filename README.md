@@ -24,6 +24,7 @@ Estados: `pendiente` → `verificado` | `rechazado` (se puede devolver a `pendie
    Si ya tenías la base instalada y actualizas el código, ejecuta además `supabase/migracion_cambios_v2.sql`.)
 3. **Authentication → Sign In / Providers**: deja Email habilitado y **desactiva "Allow new users to sign up"**.
    Cualquier usuario autenticado puede verificar reportes, así que solo deben existir los verificadores que tú crees.
+3b. **Authentication → Sign In / Providers → Multi-Factor**: verifica que **TOTP** esté habilitado.
 4. **Authentication → Users → Add user**: crea a cada verificador con una contraseña robusta (mín. 12 caracteres).
 5. **Project Settings → API**: copia `Project URL`, la llave `anon public` y la llave `service_role`.
 
@@ -76,6 +77,7 @@ git push -u origin main
 | Control | Implementación |
 |---|---|
 | A01 Control de acceso | `src/middleware.ts` valida la sesión (`getUser()`) en `/admin/*`; cada Server Action revalida el usuario; RLS: el rol anónimo **solo puede leer puntos verificados** y no tiene ninguna política de escritura. |
+| 2FA | Login de verificadores con Cloudflare Turnstile + contraseña + código TOTP (Google Authenticator). La primera vez se configura escaneando un QR en `/admin/2fa`. El middleware, las Server Actions y las políticas RLS exigen sesión `aal2` (`supabase/migracion_2fa.sql`). |
 | A02 Criptografía | HTTPS + HSTS. La llave `service_role` solo existe en el servidor (`server-only`) y se usa únicamente para recibir reportes públicos. |
 | A03 Inyección | Cliente Supabase parametrizado; validación con Zod en el servidor; restricciones `CHECK` en la base de datos. |
 | A04/A07 Diseño y autenticación | Reportes públicos con límite de 5/hora por IP (solo se guarda un hash con sal), honeypot anti-bots, foto obligatoria, y publicación solo tras verificación humana. Rate limiting nativo de Supabase Auth en el login; error genérico; registro público desactivado. |

@@ -31,22 +31,21 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
   const isLogin = pathname === '/admin/login'
+  const is2fa = pathname === '/admin/2fa'
 
-  if (!user && !isLogin) {
+  const redirectTo = (path: string) => {
     const url = request.nextUrl.clone()
-    url.pathname = '/admin/login'
+    url.pathname = path
+    url.search = ''
     return NextResponse.redirect(url)
   }
 
-  if (user && isLogin) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/admin/dashboard'
-    return NextResponse.redirect(url)
-  }
+  if (!user) return isLogin ? response : redirectTo('/admin/login')
 
-  return response
-}
+  // 2FA obligatorio: sin nivel aal2 (contraseña + código TOTP) solo se puede estar en /admin/2fa.
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+  const completo = aal?.currentLevel === 'aal2'
 
-export const config = {
-  matcher: ['/admin/:path*'],
+  if (completo) return isLogin || is2fa ? redirectTo('/admin/dashboard') : response
+  return is2fa ? response : redirectTo('/admin/2fa')
 }

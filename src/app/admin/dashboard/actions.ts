@@ -14,6 +14,9 @@ async function requireUser() {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) redirect('/admin/login')
+  // Defensa en profundidad: además del middleware, exige 2FA completado (aal2).
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+  if (aal?.currentLevel !== 'aal2') redirect('/admin/2fa')
   return { supabase, user }
 }
 

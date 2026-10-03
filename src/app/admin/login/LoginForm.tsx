@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import Captcha from '@/components/Captcha'
 import { login, type LoginState } from './actions'
 
 export default function LoginForm() {
@@ -31,6 +32,7 @@ export default function LoginForm() {
           className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-2 focus:outline-blue-600"
         />
       </div>
+      <Captcha resetKey={state} />
       <button
         type="submit" disabled={pending}
         className="w-full rounded-md bg-slate-900 py-2 font-medium text-white hover:bg-slate-700 disabled:opacity-60"

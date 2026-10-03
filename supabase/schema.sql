@@ -34,26 +34,26 @@ create policy "puntos_select_verificados"
   to anon, authenticated
   using (estado = 'verificado');
 
--- Administradores (autenticados): ven todo y gestionan todo
+-- Administradores (autenticados con 2FA completado, aal2): ven todo y gestionan todo
 create policy "puntos_select_admin"
   on public.puntos for select
   to authenticated
-  using (true);
+  using ((select auth.jwt() ->> 'aal') = 'aal2');
 
 create policy "puntos_insert_admin"
   on public.puntos for insert
   to authenticated
-  with check (true);
+  with check ((select auth.jwt() ->> 'aal') = 'aal2');
 
 create policy "puntos_update_admin"
   on public.puntos for update
   to authenticated
-  using (true) with check (true);
+  using ((select auth.jwt() ->> 'aal') = 'aal2') with check ((select auth.jwt() ->> 'aal') = 'aal2');
 
 create policy "puntos_delete_admin"
   on public.puntos for delete
   to authenticated
-  using (true);
+  using ((select auth.jwt() ->> 'aal') = 'aal2');
 
 -- Los reportes ciudadanos los inserta el servidor con la llave service_role (que ignora RLS).
 -- El rol anónimo NO tiene ninguna política de escritura.
@@ -94,14 +94,14 @@ create policy "fotos_select_publico"
 create policy "fotos_insert_admin"
   on storage.objects for insert
   to authenticated
-  with check (bucket_id = 'puntos-fotos');
+  with check (bucket_id = 'puntos-fotos' and (select auth.jwt() ->> 'aal') = 'aal2');
 
 create policy "fotos_update_admin"
   on storage.objects for update
   to authenticated
-  using (bucket_id = 'puntos-fotos');
+  using (bucket_id = 'puntos-fotos' and (select auth.jwt() ->> 'aal') = 'aal2');
 
 create policy "fotos_delete_admin"
   on storage.objects for delete
   to authenticated
-  using (bucket_id = 'puntos-fotos');
+  using (bucket_id = 'puntos-fotos' and (select auth.jwt() ->> 'aal') = 'aal2');
