@@ -5,8 +5,6 @@ export type Estado = 'pendiente' | 'verificado' | 'rechazado'
 export interface Punto {
   id: string
   categoria: Categoria
-  nombre: string
-  descripcion: string | null
   latitud: number
   longitud: number
   imagen_url: string | null
@@ -20,7 +18,7 @@ export interface Punto {
 // Lo único que se expone en el mapa público (solo puntos verificados).
 export type PuntoMapa = Pick<
   Punto,
-  | 'id' | 'categoria' | 'nombre' | 'descripcion' | 'latitud' | 'longitud'
+  | 'id' | 'categoria' | 'latitud' | 'longitud'
   | 'imagen_url' | 'verificado_en' | 'nota_verificacion' | 'foto_verificacion_url'
 >
 

@@ -12,11 +12,12 @@ try {
 // OWASP A05: Content-Security-Policy estricta
 const csp = [
   `default-src 'self'`,
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://challenges.cloudflare.com`,
+  `frame-src https://challenges.cloudflare.com`,
   `style-src 'self' 'unsafe-inline'`,
   `img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org${supabaseHost ? ` https://${supabaseHost}` : ''}`,
   `font-src 'self' data:`,
-  `connect-src 'self'${supabaseHost ? ` https://${supabaseHost} wss://${supabaseHost}` : ''}`,
+  `connect-src 'self' https://challenges.cloudflare.com${supabaseHost ? ` https://${supabaseHost} wss://${supabaseHost}` : ''}`,
   `object-src 'none'`,
   `base-uri 'self'`,
   `form-action 'self'`,

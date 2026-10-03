@@ -1,9 +1,8 @@
 'use server'
 
-import { createHash } from 'node:crypto'
-import { headers } from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { leerPunto } from '@/lib/schemas'
+import { hashIp, verificarCaptcha } from '@/lib/captcha'
 import { archivoDeForm, subirImagen } from '@/lib/imagenes'
 import type { FormState } from '@/lib/types'
 
@@ -19,14 +18,13 @@ export async function crearReporte(_prev: FormState, formData: FormData): Promis
   const file = archivoDeForm(formData, 'foto')
   if (!file) return { error: 'Adjunta una foto como evidencia.' }
 
+  const errCaptcha = await verificarCaptcha(formData)
+  if (errCaptcha) return { error: errCaptcha }
+
   const supabase = createAdminClient()
 
   // OWASP A04: límite de reportes por IP (se guarda solo un hash con sal, no la IP).
-  const h = await headers()
-  const ip = h.get('x-forwarded-for')?.split(',')[0].trim() || h.get('x-real-ip') || 'desconocida'
-  const ipHash = createHash('sha256')
-    .update(`${process.env.RATE_LIMIT_SALT ?? 'ojo-ciudadano'}:${ip}`)
-    .digest('hex')
+  const ipHash = await hashIp('reporte')
 
   const desde = new Date(Date.now() - 60 * 60 * 1000).toISOString()
   const { count } = await supabase
@@ -45,7 +43,6 @@ export async function crearReporte(_prev: FormState, formData: FormData): Promis
   // Siempre entra como "pendiente": solo un admin puede verificarlo.
   const { error } = await supabase.from('puntos').insert({
     ...parsed.data,
-    descripcion: parsed.data.descripcion || null,
     imagen_url: img.url,
     estado: 'pendiente',
   })

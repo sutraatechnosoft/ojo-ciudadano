@@ -4,6 +4,7 @@ import { useActionState, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { CATEGORIAS, CATEGORIA_KEYS } from '@/lib/categorias'
+import Captcha from './Captcha'
 import type { FormState, Punto } from '@/lib/types'
 
 const LocationPicker = dynamic(() => import('./LocationPicker'), {
@@ -96,27 +97,6 @@ export default function PuntoForm({
       </div>
 
       <div>
-        <label htmlFor="nombre" className="mb-1 block text-sm font-medium text-slate-700">
-          Título
-        </label>
-        <input
-          id="nombre" name="nombre" required maxLength={120} defaultValue={punto?.nombre}
-          placeholder="Ej.: Hueco profundo frente a la escuela"
-          className={inputCls}
-        />
-      </div>
-
-      <div>
-        <label htmlFor="descripcion" className="mb-1 block text-sm font-medium text-slate-700">
-          Descripción <span className="font-normal text-slate-500">(opcional, máx. 1000 caracteres)</span>
-        </label>
-        <textarea
-          id="descripcion" name="descripcion" rows={3} maxLength={1000}
-          defaultValue={punto?.descripcion ?? ''} className={inputCls}
-        />
-      </div>
-
-      <div>
         <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
           <p className="m-0 text-sm font-medium text-slate-700">
             Ubicación <span className="font-normal text-slate-500">(haz clic en el mapa para marcarla)</span>
@@ -174,6 +154,8 @@ export default function PuntoForm({
           className="block w-full text-sm text-slate-600 file:mr-4 file:rounded file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:font-medium file:text-slate-800 hover:file:bg-slate-200"
         />
       </div>
+
+      {publico && <Captcha resetKey={state} />}
 
       <div className="flex items-center gap-3">
         <button

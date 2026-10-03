@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { logout } from '../login/actions'
 import DeleteButton from '@/components/DeleteButton'
 import { CATEGORIAS } from '@/lib/categorias'
+import CategoriaIcon from '@/components/CategoriaIcon'
 import type { Estado, Punto } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -84,8 +85,15 @@ export default async function DashboardPage({
                     )}
                   </td>
                   <td className="p-3">
-                    <div className="font-medium text-slate-900">{p.nombre}</div>
-                    <div className="text-xs text-slate-500">{(CATEGORIAS[p.categoria] ?? CATEGORIAS.otro).label}</div>
+                    <div className="flex items-center gap-2 font-medium text-slate-900">
+                      <span
+                        className="inline-flex h-6 w-6 items-center justify-center rounded-full text-white"
+                        style={{ background: (CATEGORIAS[p.categoria] ?? CATEGORIAS.otro).color }}
+                      >
+                        <CategoriaIcon categoria={p.categoria} size={14} />
+                      </span>
+                      {(CATEGORIAS[p.categoria] ?? CATEGORIAS.otro).label}
+                    </div>
                   </td>
                   <td className="p-3 text-slate-600">{Number(p.latitud)}, {Number(p.longitud)}</td>
                   <td className="p-3 text-slate-600">
@@ -99,7 +107,7 @@ export default async function DashboardPage({
                       <Link href={`/admin/dashboard/editar/${p.id}`} className="text-slate-600 hover:underline">
                         Editar
                       </Link>
-                      <DeleteButton id={p.id} nombre={p.nombre} />
+                      <DeleteButton id={p.id} nombre={(CATEGORIAS[p.categoria] ?? CATEGORIAS.otro).label} />
                     </div>
                   </td>
                 </tr>

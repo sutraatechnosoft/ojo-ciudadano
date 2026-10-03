@@ -39,7 +39,6 @@ export async function createPunto(_prev: FormState, formData: FormData): Promise
   // Todo punto nace "pendiente": debe verificarse en sitio antes de publicarse.
   const { error } = await supabase.from('puntos').insert({
     ...parsed.data,
-    descripcion: parsed.data.descripcion || null,
     imagen_url,
     estado: 'pendiente',
   })
@@ -55,10 +54,7 @@ export async function updatePunto(id: string, _prev: FormState, formData: FormDa
   const parsed = leerPunto(formData)
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
-  const update: Record<string, unknown> = {
-    ...parsed.data,
-    descripcion: parsed.data.descripcion || null,
-  }
+  const update: Record<string, unknown> = { ...parsed.data }
   let oldPath: string | null = null
 
   const file = archivoDeForm(formData, 'foto')

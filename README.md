@@ -20,7 +20,8 @@ Estados: `pendiente` → `verificado` | `rechazado` (se puede devolver a `pendie
 
 1. Crea un proyecto en https://supabase.com.
 2. **SQL Editor**: ejecuta `supabase/schema.sql`.
-   (Si ya tenías la versión anterior de la app, ejecuta en su lugar `supabase/migracion_verificacion.sql`.)
+   (Si ya tenías la versión anterior de la app, ejecuta en su lugar `supabase/migracion_verificacion.sql`.
+   Si ya tenías la base instalada y actualizas el código, ejecuta además `supabase/migracion_cambios_v2.sql`.)
 3. **Authentication → Sign In / Providers**: deja Email habilitado y **desactiva "Allow new users to sign up"**.
    Cualquier usuario autenticado puede verificar reportes, así que solo deben existir los verificadores que tú crees.
 4. **Authentication → Users → Add user**: crea a cada verificador con una contraseña robusta (mín. 12 caracteres).
@@ -39,10 +40,12 @@ npm run dev
 | `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Llave anon (pública) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Llave service_role. **Solo servidor**, nunca con prefijo `NEXT_PUBLIC_` |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Llaves de Cloudflare Turnstile (captcha de reportes y contacto). Sin ellas los formularios públicos no envían |
 | `RATE_LIMIT_SALT` | Texto aleatorio largo para anonimizar IPs en el límite de reportes |
 | `NEXT_PUBLIC_MAP_LAT/LON/ZOOM` | (Opcional) centro y zoom inicial del mapa, p. ej. tu ciudad |
 
 - Mapa público: http://localhost:3000
+- Contacto: http://localhost:3000/contacto (los mensajes quedan en la tabla `contactos` de Supabase)
 - Reportar: http://localhost:3000/reportar
 - Verificadores: http://localhost:3000/admin/login
 
@@ -62,7 +65,7 @@ git push -u origin main
 ## 4. Deploy en Vercel
 
 1. https://vercel.com → **Add New… → Project** → importa el repositorio.
-2. En **Environment Variables** agrega las 4 variables obligatorias de la tabla anterior (y las del mapa si las usas).
+2. En **Environment Variables** agrega las 6 variables obligatorias de la tabla anterior (y las del mapa si las usas).
 3. **Deploy**. Cada `git push` a `main` redeploya automáticamente.
 4. En Supabase → **Authentication → URL Configuration**, define *Site URL* con `https://tu-app.vercel.app`.
 

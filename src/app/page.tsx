@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import MapLoader from '@/components/MapLoader'
 import { CATEGORIAS } from '@/lib/categorias'
+import CategoriaIcon from '@/components/CategoriaIcon'
 import type { PuntoMapa } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -11,7 +12,7 @@ export default async function Home() {
   // Filtro explícito: aunque haya un admin con sesión, el mapa público solo muestra verificados.
   const { data, error } = await supabase
     .from('puntos')
-    .select('id, categoria, nombre, descripcion, latitud, longitud, imagen_url, verificado_en, nota_verificacion, foto_verificacion_url')
+    .select('id, categoria, latitud, longitud, imagen_url, verificado_en, nota_verificacion, foto_verificacion_url')
     .eq('estado', 'verificado')
 
   if (error) console.error('Error al cargar puntos:', error.message)
@@ -43,17 +44,22 @@ export default async function Home() {
           Reportar un problema
         </Link>
         <Link
-          href="/admin/login"
+          href="/contacto"
           className="rounded-md bg-white/95 px-3 py-2 text-sm font-medium text-slate-800 shadow hover:bg-white focus:outline-2 focus:outline-offset-2 focus:outline-blue-600"
         >
-          Administración
+          Contacto
         </Link>
       </div>
 
       <ul className="absolute bottom-6 left-3 z-[1000] m-0 list-none space-y-1 rounded-md bg-white/95 p-3 text-xs text-slate-700 shadow">
-        {Object.values(CATEGORIAS).map((c) => (
-          <li key={c.label} className="flex items-center gap-2">
-            <span className="inline-block h-3 w-3 rounded-full" style={{ background: c.color }} />
+        {Object.entries(CATEGORIAS).map(([k, c]) => (
+          <li key={k} className="flex items-center gap-2">
+            <span
+              className="inline-flex h-6 w-6 items-center justify-center rounded-full text-white"
+              style={{ background: c.color }}
+            >
+              <CategoriaIcon categoria={k as keyof typeof CATEGORIAS} size={14} />
+            </span>
             {c.label}
           </li>
         ))}

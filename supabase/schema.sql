@@ -7,8 +7,8 @@
 create table if not exists public.puntos (
   id uuid primary key default gen_random_uuid(),
   categoria text not null default 'otro'
-    check (categoria in ('hueco', 'obra_inconclusa', 'alumbrado', 'otro')),
-  nombre text not null check (char_length(nombre) between 1 and 120),
+    check (categoria in ('hueco', 'obra_inconclusa', 'obra_en_ejecucion', 'alumbrado', 'otro')),
+  nombre text check (nombre is null or char_length(nombre) between 1 and 120),  -- ya no se captura
   descripcion text check (descripcion is null or char_length(descripcion) <= 1000),
   latitud numeric not null check (latitud between -90 and 90),
   longitud numeric not null check (longitud between -180 and 180),
@@ -67,6 +67,16 @@ create table if not exists public.reportes_limite (
 create index if not exists reportes_limite_idx on public.reportes_limite (ip_hash, created_at);
 alter table public.reportes_limite enable row level security;
 -- Limpieza opcional: delete from public.reportes_limite where created_at < now() - interval '2 days';
+
+-- Mensajes de contacto (solo accesibles con service_role)
+create table if not exists public.contactos (
+  id uuid primary key default gen_random_uuid(),
+  nombre text not null check (char_length(nombre) between 1 and 100),
+  email text not null check (char_length(email) between 3 and 254),
+  mensaje text not null check (char_length(mensaje) between 1 and 2000),
+  created_at timestamptz not null default now()
+);
+alter table public.contactos enable row level security;
 
 -- Bucket de fotos: lectura pública, 5 MB máx., solo JPG/PNG/WebP
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

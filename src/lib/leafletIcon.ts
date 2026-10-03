@@ -1,4 +1,5 @@
 import L from 'leaflet'
+import { CATEGORIAS, svgIcono, type Categoria } from './categorias'
 import icon from 'leaflet/dist/images/marker-icon.png'
 import icon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import shadow from 'leaflet/dist/images/marker-shadow.png'
@@ -14,13 +15,14 @@ export const defaultIcon = L.icon({
   shadowSize: [41, 41],
 })
 
-// Pin de color por categoría (sin imágenes externas).
-export function pinIcon(color: string) {
+// Pin de color con el icono de la categoría (sin imágenes externas).
+export function pinIcon(categoria: Categoria) {
+  const cat = CATEGORIAS[categoria] ?? CATEGORIAS.otro
   return L.divIcon({
     className: '',
-    html: `<div class="pin" style="background:${color}"></div>`,
-    iconSize: [28, 28],
-    iconAnchor: [14, 34],
-    popupAnchor: [0, -34],
+    html: `<div class="pin" style="background:${cat.color}">${svgIcono(categoria, 18, '#fff')}</div>`,
+    iconSize: [34, 34],
+    iconAnchor: [17, 42],
+    popupAnchor: [0, -42],
   })
 }

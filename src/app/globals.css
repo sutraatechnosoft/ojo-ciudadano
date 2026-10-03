@@ -5,18 +5,14 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
 .leaflet-container { font-family: inherit; }
 
 .pin {
-  position: relative;
-  width: 28px;
-  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
   border-radius: 50% 50% 50% 0;
   transform: rotate(-45deg);
   border: 2px solid #fff;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45);
 }
-.pin::after {
-  content: "";
-  position: absolute;
-  inset: 7px;
-  background: #fff;
-  border-radius: 50%;
-}
+.pin svg { transform: rotate(45deg); }

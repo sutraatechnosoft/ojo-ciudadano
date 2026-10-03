@@ -30,13 +30,12 @@ export default async function RevisarPage({ params }: { params: Promise<{ id: st
 
         <section className="rounded-lg bg-white p-6 shadow">
           <p className="m-0 text-xs font-medium text-slate-500">
-            {cat.label} · Estado actual: <strong>{p.estado}</strong>
+            Estado actual: <strong>{p.estado}</strong>
           </p>
-          <h1 className="mb-2 mt-1 text-xl font-semibold text-slate-900">{p.nombre}</h1>
-          {p.descripcion && <p className="mt-0 text-sm text-slate-700">{p.descripcion}</p>}
+          <h1 className="mb-2 mt-1 text-xl font-semibold text-slate-900">{cat.label}</h1>
           {p.imagen_url && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={p.imagen_url} alt={p.nombre} className="my-3 max-h-80 w-full rounded object-cover" />
+            <img src={p.imagen_url} alt={`Foto del reporte: ${cat.label}`} className="my-3 max-h-80 w-full rounded object-cover" />
           )}
           <p className="m-0 text-sm text-slate-600">
             Coordenadas: {p.latitud}, {p.longitud} ·{' '}
