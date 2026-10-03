@@ -36,13 +36,7 @@ export default async function Home() {
         </p>
       </div>
 
-      <div className="absolute right-3 top-3 z-[1000] flex items-center gap-2">
-        <Link
-          href="/reportar"
-          className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow hover:bg-slate-700 focus:outline-2 focus:outline-offset-2 focus:outline-blue-600"
-        >
-          Reportar un problema
-        </Link>
+      <div className="absolute right-3 top-3 z-[1000]">
         <Link
           href="/contacto"
           className="rounded-md bg-white/95 px-3 py-2 text-sm font-medium text-slate-800 shadow hover:bg-white focus:outline-2 focus:outline-offset-2 focus:outline-blue-600"
@@ -50,6 +44,17 @@ export default async function Home() {
           Contacto
         </Link>
       </div>
+
+      <Link
+        href="/reportar"
+        aria-label="Reportar un problema"
+        className="absolute bottom-10 right-4 z-[1000] flex h-20 w-20 flex-col items-center justify-center rounded-full bg-slate-900 text-white shadow-lg hover:bg-slate-700 focus:outline-2 focus:outline-offset-2 focus:outline-blue-600"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        <span className="text-xs font-semibold leading-tight">Reportar</span>
+      </Link>
 
       <ul className="absolute bottom-6 left-3 z-[1000] m-0 list-none space-y-1 rounded-md bg-white/95 p-3 text-xs text-slate-700 shadow">
         {Object.entries(CATEGORIAS).map(([k, c]) => (
