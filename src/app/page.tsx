@@ -53,7 +53,7 @@ export default async function Home() {
       <Link
         href="/reportar"
         aria-label="Reportar un problema"
-        className="absolute bottom-10 right-4 z-[1000] flex h-20 w-20 flex-col items-center justify-center rounded-full bg-[#E65100] text-white shadow-lg hover:bg-[#BF360C] focus:outline-2 focus:outline-offset-2 focus:outline-blue-600"
+        className="absolute bottom-10 right-4 z-[1000] flex h-20 w-20 flex-col items-center justify-center rounded-full bg-[#E65100] text-white shadow-[0_8px_20px_rgba(0,0,0,0.45)] ring-4 ring-white/90 transition hover:bg-[#BF360C] hover:shadow-[0_10px_26px_rgba(0,0,0,0.55)] active:scale-95 focus:outline-2 focus:outline-offset-2 focus:outline-blue-600"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
           <path d="M12 5v14M5 12h14" />
