@@ -229,7 +229,7 @@ export default function PuntoForm({
       <div>
         <p className="mb-1 mt-0 text-sm font-medium text-slate-700">
           Foto {publico ? '(obligatoria)' : ''}{' '}
-          <span className="font-normal text-slate-500">(se reduce automáticamente antes de enviarla)</span>
+          <span className="font-normal text-slate-500"></span>
         </p>
         {(preview || punto?.imagen_url) && (
           <div className="mb-2 flex items-center gap-3 text-sm text-slate-600">
