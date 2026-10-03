@@ -19,7 +19,7 @@ const LocationPicker = dynamic(() => import('./LocationPicker'), {
 const readonlyCls = 'cursor-not-allowed bg-slate-100 text-slate-700'
 
 const inputCls =
-  'w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-2 focus:outline-blue-600'
+  'w-full rounded-md border border-slate-300 px-3 py-2 text-base focus:outline-2 focus:outline-blue-600'
 
 export default function PuntoForm({
   action,
@@ -29,7 +29,6 @@ export default function PuntoForm({
   publico = false,
 }: {
   action: (prev: FormState, formData: FormData) => Promise<FormState>
-  // Solo en el formulario público: pide la URL firmada para subir la foto directo a Storage.
   subir?: (formData: FormData) => Promise<SubidaState>
   punto?: Punto
   submitLabel: string
@@ -88,7 +87,7 @@ export default function PuntoForm({
   const onElegir = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target
     const f = input.files?.[0]
-    input.value = '' // permite volver a elegir el mismo archivo
+    input.value = '' 
     if (!f) return
     setFotoMsg('')
     setProcesando(true)
@@ -133,13 +132,12 @@ export default function PuntoForm({
   if (state.ok) {
     return (
       <div role="status" className="rounded-md border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
-        <h2 className="m-0 text-lg font-semibold">Reporte recibido</h2>
-        <p className="mt-2 text-sm">
+        <h2 className="m-0 text-xl font-semibold">Reporte recibido</h2>
+        <p className="mt-2 text-base">
           Quedó pendiente de verificación. Aparecerá en el mapa cuando un verificador visite el sitio y confirme que existe.
         </p>
-        <div className="mt-4 flex gap-4 text-sm">
+        <div className="mt-4 flex gap-4 text-base">
           <Link href="/" className="font-medium underline">Volver al mapa</Link>
-          {/* Navegación completa para reiniciar el formulario */}
           <a href="/reportar" className="underline">Enviar otro reporte</a>
         </div>
       </div>
@@ -149,7 +147,7 @@ export default function PuntoForm({
   return (
     <form action={formAction} className="space-y-5">
       {state.error && (
-        <div role="alert" className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+        <div role="alert" className="rounded border border-red-200 bg-red-50 p-3 text-base text-red-800">
           {state.error}
         </div>
       )}
@@ -165,8 +163,8 @@ export default function PuntoForm({
       )}
 
       <div>
-        <label htmlFor="categoria" className="mb-1 block text-sm font-medium text-slate-700">
-          Tipo de problema
+        <label htmlFor="categoria" className="mb-1 block text-base font-medium text-slate-700">
+          Tipo de incidencia
         </label>
         <select
           id="categoria" name="categoria" required defaultValue={punto?.categoria ?? ''}
@@ -180,17 +178,17 @@ export default function PuntoForm({
       </div>
 
       <div>
-        <p className="mb-2 mt-0 text-sm font-medium text-slate-700">
+        <p className="mb-2 mt-0 text-base font-medium text-slate-700">
           Ubicación <span className="font-normal text-slate-500">(usa tu ubicación o toca el mapa para marcarla)</span>
         </p>
         <button
           type="button" onClick={usarMiUbicacion} disabled={ubicando}
-          className="mb-3 flex w-full items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-3 text-base font-semibold text-white shadow-sm hover:bg-blue-700 active:bg-blue-800 disabled:opacity-70 sm:w-auto"
+          className="mb-3 flex w-full items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-3 text-lg font-semibold text-white shadow-sm hover:bg-blue-700 active:bg-blue-800 disabled:opacity-70 sm:w-auto"
         >
           <span aria-hidden="true">📍</span>
           {ubicando ? 'Buscando tu ubicación…' : 'Usar mi ubicación'}
         </button>
-        {geoMsg && <p role="status" className="my-1 text-sm text-amber-700">{geoMsg}</p>}
+        {geoMsg && <p role="status" className="my-1 text-base text-amber-700">{geoMsg}</p>}
         <div className="h-64 overflow-hidden rounded-md border border-slate-300">
           <LocationPicker
             lat={latNum}
@@ -205,32 +203,32 @@ export default function PuntoForm({
         </div>
         <div className="mt-3 grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="latitud" className="mb-1 block text-sm font-medium text-slate-700">Latitud</label>
+            <label htmlFor="latitud" className="mb-1 block text-base font-medium text-slate-700">Latitud</label>
             <input
               id="latitud" name="latitud" type="text" readOnly aria-readonly="true" required
               autoComplete="off" value={lat} placeholder="—" className={`${inputCls} ${readonlyCls}`}
             />
           </div>
           <div>
-            <label htmlFor="longitud" className="mb-1 block text-sm font-medium text-slate-700">Longitud</label>
+            <label htmlFor="longitud" className="mb-1 block text-base font-medium text-slate-700">Longitud</label>
             <input
               id="longitud" name="longitud" type="text" readOnly aria-readonly="true" required
               autoComplete="off" value={lon} placeholder="—" className={`${inputCls} ${readonlyCls}`}
             />
           </div>
         </div>
-        <p className="mb-0 mt-2 text-xs text-slate-500">
+        <p className="mb-0 mt-2 text-sm text-slate-500">
           Las coordenadas se completan solas al marcar el punto en el mapa o con “Usar mi ubicación”.
         </p>
       </div>
 
       <div>
-        <p className="mb-1 mt-0 text-sm font-medium text-slate-700">
+        <p className="mb-1 mt-0 text-base font-medium text-slate-700">
           Foto {publico ? '(obligatoria)' : ''}{' '}
           <span className="font-normal text-slate-500"></span>
         </p>
         {(preview || punto?.imagen_url) && (
-          <div className="mb-2 flex items-center gap-3 text-sm text-slate-600">
+          <div className="mb-2 flex items-center gap-3 text-base text-slate-600">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={preview ?? punto?.imagen_url ?? ''} alt="Vista previa de la foto" className="h-20 w-20 rounded object-cover" />
             <span>{preview ? 'Foto lista para enviar.' : 'Foto actual. Sube otra para reemplazarla.'}</span>
@@ -240,24 +238,23 @@ export default function PuntoForm({
           {tactil && (
             <button
               type="button" onClick={() => camaraRef.current?.click()} disabled={procesando || pending}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-100 disabled:opacity-60"
+              className="rounded-md border border-slate-300 px-4 py-3 text-base font-medium text-slate-800 hover:bg-slate-100 disabled:opacity-60"
             >
               📷 Tomar foto
             </button>
           )}
           <button
             type="button" onClick={() => archivoRef.current?.click()} disabled={procesando || pending}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-100 disabled:opacity-60"
+            className="rounded-md border border-slate-300 px-4 py-3 text-base font-medium text-slate-800 hover:bg-slate-100 disabled:opacity-60"
           >
             {tactil ? '🖼️ Elegir de la galería' : 'Elegir archivo'}
           </button>
         </div>
-        {/* Sin atributo name: la foto se envía desde el estado, ya comprimida.
-            `capture` abre la cámara directamente en móvil; en PC se ignora. */}
+
         <input ref={camaraRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden onChange={onElegir} />
         <input ref={archivoRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={onElegir} />
-        {procesando && <p role="status" className="mb-0 mt-2 text-sm text-slate-600">Procesando la foto…</p>}
-        {fotoMsg && <p role="alert" className="mb-0 mt-2 text-sm text-red-700">{fotoMsg}</p>}
+        {procesando && <p role="status" className="mb-0 mt-2 text-base text-slate-600">Procesando la foto…</p>}
+        {fotoMsg && <p role="alert" className="mb-0 mt-2 text-base text-red-700">{fotoMsg}</p>}
       </div>
 
       {publico && <Captcha resetKey={state} />}
@@ -265,11 +262,11 @@ export default function PuntoForm({
       <div className="flex items-center gap-3">
         <button
           type="submit" disabled={pending || procesando || latNum === null || lonNum === null || (publico && !archivo)}
-          className="rounded-md bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-700 disabled:opacity-60"
+          className="rounded-md bg-slate-900 px-5 py-3 text-base font-medium text-white hover:bg-slate-700 disabled:opacity-60"
         >
           {pending ? 'Enviando…' : submitLabel}
         </button>
-        <Link href={publico ? '/' : '/admin/dashboard'} className="text-sm text-slate-600 hover:underline">
+        <Link href={publico ? '/' : '/admin/dashboard'} className="text-base text-slate-600 hover:underline">
           Cancelar
         </Link>
       </div>
