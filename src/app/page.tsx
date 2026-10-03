@@ -31,7 +31,7 @@ export default async function Home() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo.png" alt="" width={40} height={40} className="h-10 w-10 shrink-0 object-contain" />
         <div>
-          <h1 className="m-0 text-lg font-semibold text-slate-900">Ojo Ciudadano</h1>
+          <h1 className="m-0 text-lg font-semibold text-slate-900">OJO Ciudadano</h1>
           <p className="m-0 mt-0.5 text-sm text-slate-600">
             {puntos.length === 0
               ? 'Aún no hay problemas verificados.'
