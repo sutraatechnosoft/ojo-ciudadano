@@ -27,13 +27,17 @@ export default async function Home() {
     <main className="fixed inset-0 overflow-hidden">
       <MapLoader puntos={puntos} />
 
-      <div className="absolute left-3 top-3 z-[1000] max-w-[16rem] rounded-md bg-white/95 px-4 py-3 shadow">
-        <h1 className="m-0 text-lg font-semibold text-slate-900">Ojo Ciudadano</h1>
-        <p className="m-0 mt-0.5 text-sm text-slate-600">
-          {puntos.length === 0
-            ? 'Aún no hay problemas verificados.'
-            : `${puntos.length} ${puntos.length === 1 ? 'problema verificado' : 'problemas verificados'} en sitio`}
-        </p>
+      <div className="absolute left-3 top-3 z-[1000] flex max-w-[17rem] items-center gap-3 rounded-md bg-white/95 px-4 py-3 shadow">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="" width={40} height={40} className="h-10 w-10 shrink-0 object-contain" />
+        <div>
+          <h1 className="m-0 text-lg font-semibold text-slate-900">Ojo Ciudadano</h1>
+          <p className="m-0 mt-0.5 text-sm text-slate-600">
+            {puntos.length === 0
+              ? 'Aún no hay problemas verificados.'
+              : `${puntos.length} ${puntos.length === 1 ? 'problema verificado' : 'problemas verificados'} en sitio`}
+          </p>
+        </div>
       </div>
 
       <div className="absolute right-3 top-3 z-[1000]">
@@ -48,7 +52,7 @@ export default async function Home() {
       <Link
         href="/reportar"
         aria-label="Reportar un problema"
-        className="absolute bottom-10 right-4 z-[1000] flex h-20 w-20 flex-col items-center justify-center rounded-full bg-slate-900 text-white shadow-lg hover:bg-slate-700 focus:outline-2 focus:outline-offset-2 focus:outline-blue-600"
+        className="absolute bottom-10 right-4 z-[1000] flex h-20 w-20 flex-col items-center justify-center rounded-full bg-[#E65100] text-white shadow-lg hover:bg-[#BF360C] focus:outline-2 focus:outline-offset-2 focus:outline-blue-600"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
           <path d="M12 5v14M5 12h14" />
