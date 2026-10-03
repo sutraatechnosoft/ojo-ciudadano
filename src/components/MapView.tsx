@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, ZoomControl, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { pinIcon } from '@/lib/leafletIcon'
@@ -28,12 +28,13 @@ function FitToPoints({ puntos }: { puntos: PuntoMapa[] }) {
 
 export default function MapView({ puntos }: { puntos: PuntoMapa[] }) {
   return (
-    <MapContainer center={MAP_CENTER} zoom={MAP_ZOOM} zoomControl style={{ width: '100%', height: '100%' }}>
+    <MapContainer center={MAP_CENTER} zoom={MAP_ZOOM} zoomControl={false} style={{ width: '100%', height: '100%' }}>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         maxZoom={19}
       />
+      <ZoomControl position="topright" />
       <FitToPoints puntos={puntos} />
       {puntos.map((p) => {
         const cat = CATEGORIAS[p.categoria] ?? CATEGORIAS.otro
