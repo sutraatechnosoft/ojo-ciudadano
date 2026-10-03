@@ -41,12 +41,12 @@ export default async function Home() {
       </div>
 
       <div className="absolute right-3 top-3 z-[1000]">
-        <Link
+        <!--<Link
           href="/contacto"
           className="rounded-md bg-white/95 px-3 py-2 text-sm font-medium text-slate-800 shadow hover:bg-white focus:outline-2 focus:outline-offset-2 focus:outline-blue-600"
         >
           Contacto
-        </Link>
+        </Link>-->
       </div>
 
       <Link
