@@ -29,7 +29,8 @@ export async function solicitarSubida(formData: FormData): Promise<SubidaState> 
 
   const supabase = createAdminClient()
 
-  // OWASP A04: límite por IP (solo se guarda un hash con sal). Ahora limita también las subidas.
+  // OWASP A04: límite por IP (solo se guarda un hash con sal). Falla cerrado: si no se puede
+  // comprobar o registrar el límite, se rechaza la solicitud.
   const ipHash = await hashIp('reporte')
   const desde = new Date(Date.now() - 60 * 60 * 1000).toISOString()
   const { count, error: errLimite } = await supabase
@@ -48,6 +49,14 @@ export async function solicitarSubida(formData: FormData): Promise<SubidaState> 
   if (errRegistro) {
     console.error('Error al registrar el límite por IP:', errRegistro.message)
     return { error: 'No se pudo procesar la solicitud. Inténtalo de nuevo.' }
+  }
+
+  // La ruta la elige el servidor (UUID): el cliente no puede escribir en otra ubicación.
+  const path = `reportes/${crypto.randomUUID()}.${ext}`
+  const { data, error } = await supabase.storage.from(BUCKET).createSignedUploadUrl(path)
+  if (error || !data) {
+    console.error('Error al crear la URL de subida:', error?.message)
+    return { error: 'No se pudo preparar la subida de la foto. Inténtalo de nuevo.' }
   }
 
   return { path, token: data.token, ticket: emitirTicket(path) }
