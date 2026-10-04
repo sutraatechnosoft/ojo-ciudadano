@@ -1,11 +1,54 @@
-// Solo se usa en el navegador. Reduce la foto antes de enviarla:
-//  - máx. 1600 px de lado mayor, JPEG calidad 0.8 (~300-600 KB)
-//  - al volver a codificar en canvas se eliminan los metadatos EXIF (incluida la ubicación GPS del móvil)
 export const MAX_BYTES_CLIENTE = 4 * 1024 * 1024
 
 type Cargada = { source: CanvasImageSource; width: number; height: number; cerrar: () => void }
 
-async function cargar(file: File): Promise<Cargada> {
+// Lee solo el ancho y alto de la foto, sin decodificarla completa en memoria.
+function dimensiones(file: File): Promise<{ width: number; height: number } | null> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    const fin = (r: { width: number; height: number } | null) => {
+      img.onload = null
+      img.onerror = null
+      img.src = ''
+      URL.revokeObjectURL(url)
+      resolve(r)
+    }
+    img.onload = () =>
+      fin(img.naturalWidth && img.naturalHeight ? { width: img.naturalWidth, height: img.naturalHeight } : null)
+    img.onerror = () => fin(null)
+    img.src = url
+  })
+}
+
+async function cargar(file: File, maxLado: number): Promise<Cargada> {
+  // 1) Preferido: decodificar directamente al tamaño final. Una foto de 48 MP nunca
+  //    se carga completa (serían ~190 MB de RAM), que es lo que agota la memoria en móviles.
+  const dim = await dimensiones(file)
+  if (dim) {
+    const escala = Math.min(1, maxLado / Math.max(dim.width, dim.height))
+    if (escala < 1) {
+      const w = Math.max(1, Math.round(dim.width * escala))
+      const h = Math.max(1, Math.round(dim.height * escala))
+      try {
+        const bmp = await createImageBitmap(file, {
+          resizeWidth: w,
+          resizeHeight: h,
+          resizeQuality: 'medium',
+          imageOrientation: 'from-image',
+        })
+        if (bmp.width === w && bmp.height === h) {
+          return { source: bmp, width: bmp.width, height: bmp.height, cerrar: () => bmp.close() }
+        }
+        // Dimensiones inesperadas (p. ej. orientación EXIF inconsistente): usar la ruta completa.
+        bmp.close()
+      } catch {
+        // Sin soporte de resize en createImageBitmap: usar la ruta completa.
+      }
+    }
+  }
+
+  // 2) Alternativa: decodificar completa (fotos pequeñas o navegadores antiguos)
   try {
     const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' })
     return { source: bmp, width: bmp.width, height: bmp.height, cerrar: () => bmp.close() }
@@ -19,29 +62,48 @@ async function cargar(file: File): Promise<Cargada> {
   }
 }
 
-export async function comprimirImagen(file: File, maxLado = 1600, calidad = 0.8): Promise<File> {
-  if (!file.type.startsWith('image/')) return file
-
-  const img = await cargar(file)
+async function comprimirUna(file: File, maxLado: number, calidad: number): Promise<File> {
+  const img = await cargar(file, maxLado)
+  const canvas = document.createElement('canvas')
   try {
     const escala = Math.min(1, maxLado / Math.max(img.width, img.height))
     const w = Math.max(1, Math.round(img.width * escala))
     const h = Math.max(1, Math.round(img.height * escala))
 
-    const canvas = document.createElement('canvas')
     canvas.width = w
     canvas.height = h
     const ctx = canvas.getContext('2d')
-    if (!ctx) return file
+    if (!ctx) throw new Error('canvas no disponible')
     ctx.fillStyle = '#fff' // PNG con transparencia: evita fondo negro al pasar a JPEG
     ctx.fillRect(0, 0, w, h)
     ctx.drawImage(img.source, 0, 0, w, h)
 
     const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/jpeg', calidad))
-    if (!blob) return file
+    if (!blob) throw new Error('no se pudo generar la imagen')
 
     return new File([blob], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' })
   } finally {
     img.cerrar()
+    // Libera la memoria del canvas de inmediato
+    canvas.width = 0
+    canvas.height = 0
   }
+}
+
+export async function comprimirImagen(file: File, maxLado = 1600, calidad = 0.8): Promise<File> {
+  if (!file.type.startsWith('image/')) return file
+
+  // Si falla (típicamente por falta de memoria), reintenta con tamaños menores
+  // antes de mostrarle un error al usuario.
+  const lados = [maxLado, Math.round(maxLado * 0.75), Math.round(maxLado * 0.5)]
+  let ultimoError: unknown
+  for (const lado of lados) {
+    try {
+      return await comprimirUna(file, lado, calidad)
+    } catch (e) {
+      ultimoError = e
+      await new Promise((r) => setTimeout(r, 150))
+    }
+  }
+  throw ultimoError
 }
