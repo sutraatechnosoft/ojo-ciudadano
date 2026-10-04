@@ -39,6 +39,8 @@ export default function PuntoForm({
   const [fotoMsg, setFotoMsg] = useState('')
   const [procesando, setProcesando] = useState(false)
   const [tactil, setTactil] = useState(false)
+  const [movil, setMovil] = useState(false)
+  const [moverMapa, setMoverMapa] = useState(false)
   const camaraRef = useRef<HTMLInputElement>(null)
   const archivoRef = useRef<HTMLInputElement>(null)
 
@@ -74,7 +76,21 @@ export default function PuntoForm({
   const [state, formAction, pending] = useActionState<FormState, FormData>(enviar, {})
 
   useEffect(() => {
-    setTactil(window.matchMedia('(pointer: coarse)').matches)
+    // `tactil`: pantalla táctil (botones de cámara/galería).
+    // `movil`: táctil o pantalla angosta (bloqueo del mapa). Se actualiza si cambia el modo del dispositivo.
+    const mqTactil = window.matchMedia('(pointer: coarse)')
+    const mqMovil = window.matchMedia('(pointer: coarse), (max-width: 767px)')
+    const actualizar = () => {
+      setTactil(mqTactil.matches)
+      setMovil(mqMovil.matches)
+    }
+    actualizar()
+    mqTactil.addEventListener('change', actualizar)
+    mqMovil.addEventListener('change', actualizar)
+    return () => {
+      mqTactil.removeEventListener('change', actualizar)
+      mqMovil.removeEventListener('change', actualizar)
+    }
   }, [])
 
   useEffect(() => {
@@ -185,14 +201,16 @@ export default function PuntoForm({
           type="button" onClick={usarMiUbicacion} disabled={ubicando}
           className="mb-3 flex w-full items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-3 text-lg font-semibold text-white shadow-sm hover:bg-blue-700 active:bg-blue-800 disabled:opacity-70 sm:w-auto"
         >
-          <span aria-hidden="true">📍</span>
+          <span aria-hidden="true" className="text-2xl leading-none">📍</span>
           {ubicando ? 'Buscando tu ubicación…' : 'Usar mi ubicación'}
         </button>
         {geoMsg && <p role="status" className="my-1 text-base text-amber-700">{geoMsg}</p>}
-        <div className="h-64 overflow-hidden rounded-md border border-slate-300">
+        <div className="relative h-64 overflow-hidden rounded-md border border-slate-300">
           <LocationPicker
             lat={latNum}
             lon={lonNum}
+            // En pantallas táctiles el mapa arranca bloqueado para no atrapar el scroll de la página.
+            arrastrar={!movil || moverMapa}
             onPick={(la, lo) => {
               if (!dentroDeVenezuela(la, lo)) return setGeoMsg(MSG_FUERA_DE_VENEZUELA)
               setGeoMsg('')
@@ -200,7 +218,27 @@ export default function PuntoForm({
               setLon(String(lo))
             }}
           />
+          {movil && (
+            <button
+              type="button"
+              onClick={() => setMoverMapa((v) => !v)}
+              aria-pressed={moverMapa}
+              className={`absolute right-2 top-2 z-[1000] inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-base font-semibold shadow-md ${
+                moverMapa ? 'bg-blue-600 text-white' : 'bg-white/95 text-slate-800'
+              }`}
+            >
+              <span aria-hidden="true" className="text-xl leading-none">{moverMapa ? '✔' : '✋'}</span>
+              {moverMapa ? 'Listo' : 'Mover mapa'}
+            </button>
+          )}
         </div>
+        {movil && (
+          <p className="mb-0 mt-2 text-sm text-slate-500">
+            {moverMapa
+              ? 'Arrastra el mapa con un dedo. Toca “Listo” para volver a deslizar la página.'
+              : 'Desliza para bajar por la página, toca el mapa para marcar el punto y usa “Mover mapa” para desplazarlo.'}
+          </p>
+        )}
         <div className="mt-3 grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="latitud" className="mb-1 block text-base font-medium text-slate-700">Latitud</label>
@@ -238,19 +276,22 @@ export default function PuntoForm({
           {tactil && (
             <button
               type="button" onClick={() => camaraRef.current?.click()} disabled={procesando || pending}
-              className="rounded-md border border-slate-300 px-4 py-3 text-base font-medium text-slate-800 hover:bg-slate-100 disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-4 py-3 text-base font-medium text-slate-800 hover:bg-slate-100 disabled:opacity-60"
             >
-              📷 Tomar foto
+              <span aria-hidden="true" className="text-2xl leading-none">📷</span>
+              Tomar foto
             </button>
           )}
           <button
             type="button" onClick={() => archivoRef.current?.click()} disabled={procesando || pending}
-            className="rounded-md border border-slate-300 px-4 py-3 text-base font-medium text-slate-800 hover:bg-slate-100 disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-4 py-3 text-base font-medium text-slate-800 hover:bg-slate-100 disabled:opacity-60"
           >
-            {tactil ? '🖼️ Elegir de galería' : 'Elegir archivo'}
+            <span aria-hidden="true" className="text-2xl leading-none">🖼️</span>
+            {tactil ? 'Elegir de la galería' : 'Elegir archivo'}
           </button>
         </div>
-
+        {/* Sin atributo name: la foto se envía desde el estado, ya comprimida.
+            `capture` abre la cámara directamente en móvil; en PC se ignora. */}
         <input ref={camaraRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden onChange={onElegir} />
         <input ref={archivoRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={onElegir} />
         {procesando && <p role="status" className="mb-0 mt-2 text-base text-slate-600">Procesando la foto…</p>}
