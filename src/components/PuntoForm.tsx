@@ -69,7 +69,7 @@ export default function PuntoForm({
 
       formData.set('ticket', r.ticket)
     } else if (archivo) {
-      formData.set('foto', archivo) 
+      formData.set('foto', archivo)
     }
     return action(prev, formData)
   }
@@ -104,7 +104,7 @@ export default function PuntoForm({
   const onElegir = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target
     const f = input.files?.[0]
-    input.value = '' 
+    input.value = ''
     if (!f) return
     setFotoMsg('')
     setProcesando(true)
@@ -219,8 +219,9 @@ export default function PuntoForm({
             onPick={(la, lo) => {
               if (!dentroDeVenezuela(la, lo)) return setGeoMsg(MSG_FUERA_DE_VENEZUELA)
               setGeoMsg('')
-              setLat(String(la))
-              setLon(String(lo))
+              // Máximo 6 decimales: es lo que acepta la validación del servidor.
+              setLat(la.toFixed(6))
+              setLon(lo.toFixed(6))
             }}
           />
           {movil && (
@@ -245,6 +246,14 @@ export default function PuntoForm({
           </p>
         )}
 
+        {/* IMPORTANTE: sin estos campos el servidor no recibe las coordenadas y responde "Latitud inválida". */}
+        <input type="hidden" name="latitud" value={lat} />
+        <input type="hidden" name="longitud" value={lon} />
+        <p className="mb-0 mt-2 text-base text-slate-600" aria-live="polite">
+          {latNum !== null && lonNum !== null
+            ? `Ubicación marcada: ${lat}, ${lon}`
+            : 'Aún no has marcado la ubicación.'}
+        </p>
       </div>
 
       <div>

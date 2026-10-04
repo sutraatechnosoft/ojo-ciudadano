@@ -2,8 +2,6 @@ import { z } from 'zod'
 import { CATEGORIA_KEYS } from './categorias'
 import { dentroDeVenezuela, MSG_FUERA_DE_VENEZUELA } from './venezuela'
 
-// OWASP A03: toda entrada se valida en el servidor.
-// Coordenadas: solo texto decimal simple (máx. 6 decimales). Rechaza notación científica, hex, espacios, etc.
 const coordenada = (nombre: string, min: number, max: number) =>
   z
     .string({ required_error: `${nombre} inválida.`, invalid_type_error: `${nombre} inválida.` })
@@ -21,7 +19,6 @@ export const puntoSchema = z
 
 export const idSchema = z.string().uuid()
 
-// Un campo repetido en la petición (parameter pollution) se trata como inválido.
 const unico = (formData: FormData, k: string) => {
   const v = formData.getAll(k)
   return v.length === 1 ? v[0] : undefined
