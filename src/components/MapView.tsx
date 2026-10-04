@@ -21,8 +21,8 @@ export default function MapView({ puntos }: { puntos: PuntoMapa[] }) {
         const cat = CATEGORIAS[p.categoria] ?? CATEGORIAS.otro
         return (
           <Marker key={p.id} position={[p.latitud, p.longitud]} icon={pinIcon(p.categoria)}>
-            <Popup minWidth={200} maxWidth={280}>
-              <div className="w-52 sm:w-60">
+            <Popup minWidth={200} maxWidth={300}>
+              <div className="w-60">
                 <span
                   className="inline-flex items-center gap-1.5 rounded px-2 py-1 text-sm font-semibold text-white"
                   style={{ background: cat.color }}
@@ -36,7 +36,7 @@ export default function MapView({ puntos }: { puntos: PuntoMapa[] }) {
                     src={p.imagen_url}
                     alt={`Foto del reporte: ${cat.label}`}
                     loading="lazy"
-                    className="my-1.5 block h-auto max-h-[28vh] w-full rounded object-contain sm:my-2 sm:max-h-[45vh]"
+                    className="my-1.5 block h-auto max-h-[55vh] w-full rounded object-contain sm:my-2 sm:max-h-[45vh]"
                   />
                 )}
                 <div className="rounded bg-emerald-50 p-2 text-xs text-emerald-900">
@@ -49,7 +49,7 @@ export default function MapView({ puntos }: { puntos: PuntoMapa[] }) {
                       src={p.foto_verificacion_url}
                       alt="Foto de la verificación"
                       loading="lazy"
-                      className="mt-1.5 block h-auto max-h-[20vh] w-full rounded object-contain sm:mt-2 sm:max-h-[35vh]"
+                      className="mt-1.5 block h-auto max-h-[40vh] w-full rounded object-contain sm:mt-2 sm:max-h-[35vh]"
                     />
                   )}
                 </div>

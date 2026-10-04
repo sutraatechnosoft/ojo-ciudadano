@@ -26,7 +26,6 @@ function Recenter({ lat, lon }: { lat: number | null; lon: number | null }) {
   return null
 }
 
-// En pantallas táctiles el padre bloquea el arrastre para no atrapar el scroll de la página.
 function ControlArrastre({ activo }: { activo: boolean }) {
   const map = useMap()
   useEffect(() => {
