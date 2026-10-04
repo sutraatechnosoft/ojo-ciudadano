@@ -4,12 +4,12 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 // Ticket firmado (HMAC) que prueba que el captcha, el límite por IP y las validaciones ya pasaron
 // al pedir la URL de subida. Evita reutilizar el token de Turnstile (sirve una sola vez) y impide
 // que el cliente invente rutas: la ruta va dentro del ticket y no se puede alterar.
-const TTL_MS = 30 * 60 * 1000
+const TTL_MS = 15 * 60 * 1000
 
 function firma(data: string) {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!key) throw new Error('Falta SUPABASE_SERVICE_ROLE_KEY')
-  return createHmac('sha256', `ticket-subida:${key}`).update(data).digest('base64url')
+  const key = process.env.TICKET_SECRET
+  if (!key) throw new Error('Falta TICKET_SECRET')
+  return createHmac('sha256', key).update(data).digest('base64url')
 }
 
 export function emitirTicket(path: string) {
