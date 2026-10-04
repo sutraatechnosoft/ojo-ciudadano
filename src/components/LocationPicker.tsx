@@ -26,14 +26,26 @@ function Recenter({ lat, lon }: { lat: number | null; lon: number | null }) {
   return null
 }
 
+// En pantallas táctiles el padre bloquea el arrastre para no atrapar el scroll de la página.
+function ControlArrastre({ activo }: { activo: boolean }) {
+  const map = useMap()
+  useEffect(() => {
+    if (activo) map.dragging.enable()
+    else map.dragging.disable()
+  }, [activo, map])
+  return null
+}
+
 export default function LocationPicker({
   lat,
   lon,
   onPick,
+  arrastrar = true,
 }: {
   lat: number | null
   lon: number | null
   onPick: (lat: number, lon: number) => void
+  arrastrar?: boolean
 }) {
   const hasPoint = lat !== null && lon !== null
   return (
@@ -47,6 +59,7 @@ export default function LocationPicker({
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         maxZoom={19}
       />
+      <ControlArrastre activo={arrastrar} />
       <ClickHandler onPick={onPick} />
       <Recenter lat={lat} lon={lon} />
       {hasPoint && <Marker position={[lat, lon]} icon={defaultIcon} />}
