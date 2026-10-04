@@ -41,6 +41,7 @@ export default function PuntoForm({
   const [tactil, setTactil] = useState(false)
   const [movil, setMovil] = useState(false)
   const [moverMapa, setMoverMapa] = useState(false)
+  const [categoria, setCategoria] = useState<string>(punto?.categoria ?? '')
   const camaraRef = useRef<HTMLInputElement>(null)
   const archivoRef = useRef<HTMLInputElement>(null)
 
@@ -125,6 +126,9 @@ export default function PuntoForm({
   const latNum = lat !== '' && !Number.isNaN(Number(lat)) ? Number(lat) : null
   const lonNum = lon !== '' && !Number.isNaN(Number(lon)) ? Number(lon) : null
 
+  // Reporte completo: categoría, ubicación y (en el formulario público) foto adjunta.
+  const listo = categoria !== '' && latNum !== null && lonNum !== null && (!publico || archivo !== null)
+
   const usarMiUbicacion = () => {
     setGeoMsg('')
     if (!navigator.geolocation) return setGeoMsg('Tu navegador no permite obtener la ubicación.')
@@ -183,7 +187,8 @@ export default function PuntoForm({
           Tipo de incidencia
         </label>
         <select
-          id="categoria" name="categoria" required defaultValue={punto?.categoria ?? ''}
+          id="categoria" name="categoria" required value={categoria}
+          onChange={(e) => setCategoria(e.target.value)}
           className={inputCls}
         >
           <option value="" disabled>Selecciona una opción</option>
@@ -302,8 +307,12 @@ export default function PuntoForm({
 
       <div className="flex items-center gap-3">
         <button
-          type="submit" disabled={pending || procesando || latNum === null || lonNum === null || (publico && !archivo)}
-          className="rounded-md bg-slate-900 px-5 py-3 text-base font-medium text-white hover:bg-slate-700 disabled:opacity-60"
+          type="submit" disabled={pending || procesando || !listo}
+          className={`rounded-md px-5 py-3 text-base font-semibold transition-colors disabled:cursor-not-allowed ${
+            listo
+              ? 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 active:bg-emerald-800'
+              : 'bg-slate-300 text-slate-600'
+          } ${pending ? 'opacity-70' : ''}`}
         >
           {pending ? 'Enviando…' : submitLabel}
         </button>
