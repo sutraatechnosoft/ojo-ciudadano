@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import MapLoader from '@/components/MapLoader'
-import { CATEGORIAS } from '@/lib/categorias'
-import CategoriaIcon from '@/components/CategoriaIcon'
+import Leyenda from '@/components/Leyenda'
 import type { PuntoMapa } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -40,7 +39,7 @@ export default async function Home() {
           <h1 className="m-0 text-lg font-semibold text-slate-900 sm:text-xl">OJO Ciudadano</h1>
           <p className="m-0 mt-0.5 text-sm text-slate-600">
             {puntos.length === 0
-              ? 'Aún no hay incidencia reportadas.'
+              ? 'Aún no hay incidencias reportadas.'
               : `${puntos.length} ${puntos.length === 1 ? 'incidencia verificada' : 'incidencias verificadas'}`}
           </p>
         </div>
@@ -67,19 +66,7 @@ export default async function Home() {
         <span className="text-xs font-semibold leading-tight">Reportar</span>
       </Link>
 
-      <ul className="absolute bottom-6 left-3 z-[1000] m-0 list-none space-y-1 rounded-md bg-white/95 p-3 text-xs text-slate-700 shadow">
-        {Object.entries(CATEGORIAS).map(([k, c]) => (
-          <li key={k} className="flex items-center gap-2">
-            <span
-              className="inline-flex h-6 w-6 items-center justify-center rounded-full text-white"
-              style={{ background: c.color }}
-            >
-              <CategoriaIcon categoria={k as keyof typeof CATEGORIAS} size={14} />
-            </span>
-            {c.label}
-          </li>
-        ))}
-      </ul>
+      <Leyenda />
     </main>
   )
 }
