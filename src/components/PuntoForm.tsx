@@ -298,7 +298,7 @@ export default function PuntoForm({
         {fotoMsg && <p role="alert" className="mb-0 mt-2 text-base text-red-700">{fotoMsg}</p>}
       </div>
 
-      {publico && <Captcha resetKey={state} />}
+      {publico && latNum !== null && lonNum !== null && archivo && <Captcha resetKey={state} />}
 
       <div className="flex items-center gap-3">
         <button
