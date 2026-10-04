@@ -31,9 +31,12 @@ export async function verificarCaptcha(formData: FormData): Promise<string | nul
 
 // Hash con sal de la IP (no se guarda la IP). `ambito` separa los límites de cada formulario.
 export async function hashIp(ambito: string) {
+  const salt = process.env.RATE_LIMIT_SALT
+  if (!salt) throw new Error('Falta RATE_LIMIT_SALT')
+
   const h = await headers()
   const ip = h.get('x-forwarded-for')?.split(',')[0].trim() || h.get('x-real-ip') || 'desconocida'
   return createHash('sha256')
-    .update(`${process.env.RATE_LIMIT_SALT ?? 'ojo-ciudadano'}:${ambito}:${ip}`)
+    .update(`${salt}:${ambito}:${ip}`)
     .digest('hex')
 }
