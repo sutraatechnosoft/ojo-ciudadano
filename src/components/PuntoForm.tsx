@@ -244,25 +244,7 @@ export default function PuntoForm({
               : 'Desliza para bajar por la página, toca el mapa para marcar el punto y usa “Mover mapa” para desplazarlo.'}
           </p>
         )}
-        <div className="mt-3 grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="latitud" className="mb-1 block text-base font-medium text-slate-700">Latitud</label>
-            <input
-              id="latitud" name="latitud" type="text" readOnly aria-readonly="true" required
-              autoComplete="off" value={lat} placeholder="—" className={`${inputCls} ${readonlyCls}`}
-            />
-          </div>
-          <div>
-            <label htmlFor="longitud" className="mb-1 block text-base font-medium text-slate-700">Longitud</label>
-            <input
-              id="longitud" name="longitud" type="text" readOnly aria-readonly="true" required
-              autoComplete="off" value={lon} placeholder="—" className={`${inputCls} ${readonlyCls}`}
-            />
-          </div>
-        </div>
-        <p className="mb-0 mt-2 text-sm text-slate-500">
-          Las coordenadas se completan solas al marcar el punto en el mapa o con “Usar mi ubicación”.
-        </p>
+
       </div>
 
       <div>
