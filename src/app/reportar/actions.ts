@@ -32,21 +32,22 @@ export async function solicitarSubida(formData: FormData): Promise<SubidaState> 
   // OWASP A04: límite por IP (solo se guarda un hash con sal). Ahora limita también las subidas.
   const ipHash = await hashIp('reporte')
   const desde = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-  const { count } = await supabase
+  const { count, error: errLimite } = await supabase
     .from('reportes_limite')
     .select('id', { count: 'exact', head: true })
     .eq('ip_hash', ipHash)
     .gte('created_at', desde)
+  if (errLimite) {
+    console.error('Error al consultar el límite por IP:', errLimite.message)
+    return { error: 'No se pudo procesar la solicitud. Inténtalo de nuevo.' }
+  }
   if ((count ?? 0) >= MAX_REPORTES_POR_HORA)
     return { error: 'Alcanzaste el límite de reportes por hora. Inténtalo más tarde.' }
-  await supabase.from('reportes_limite').insert({ ip_hash: ipHash })
 
-  // La ruta la elige el servidor (UUID): el cliente no puede escribir en otra ubicación.
-  const path = `reportes/${crypto.randomUUID()}.${ext}`
-  const { data, error } = await supabase.storage.from(BUCKET).createSignedUploadUrl(path)
-  if (error || !data) {
-    console.error('Error al crear la URL de subida:', error?.message)
-    return { error: 'No se pudo preparar la subida de la foto. Inténtalo de nuevo.' }
+  const { error: errRegistro } = await supabase.from('reportes_limite').insert({ ip_hash: ipHash })
+  if (errRegistro) {
+    console.error('Error al registrar el límite por IP:', errRegistro.message)
+    return { error: 'No se pudo procesar la solicitud. Inténtalo de nuevo.' }
   }
 
   return { path, token: data.token, ticket: emitirTicket(path) }
