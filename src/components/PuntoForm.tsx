@@ -58,6 +58,7 @@ export default function PuntoForm({
   const [geoMsg, setGeoMsg] = useState('')
   const [ubicando, setUbicando] = useState(false)
   const [borradorListo, setBorradorListo] = useState(false)
+  const camaraRef = useRef<HTMLInputElement>(null)
   const archivoRef = useRef<HTMLInputElement>(null)
 
   // La foto vive en el estado (ya comprimida), no en el FormData nativo del <input>.
@@ -159,16 +160,15 @@ export default function PuntoForm({
   // Chrome dispara `cancel` cuando se cierra el selector/cámara sin devolver ninguna foto
   // (incluye el caso en que la cámara falla por falta de memoria).
   useEffect(() => {
-    const input = archivoRef.current
-    if (!input) return
+    const inputs = [camaraRef.current, archivoRef.current].filter((i): i is HTMLInputElement => i !== null)
     const alCancelar = () => {
       log('cancel: no llegó ninguna foto')
       setAvisoFoto(
         'No se recibió ninguna foto. Si la cámara falló, cierra otras apps y vuelve a intentarlo, o toma la foto con tu cámara normal y elígela desde la galería.'
       )
     }
-    input.addEventListener('cancel', alCancelar)
-    return () => input.removeEventListener('cancel', alCancelar)
+    inputs.forEach((i) => i.addEventListener('cancel', alCancelar))
+    return () => inputs.forEach((i) => i.removeEventListener('cancel', alCancelar))
   }, [])
 
   const onElegir = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -339,21 +339,30 @@ export default function PuntoForm({
           </div>
         )}
         <div className="flex flex-wrap gap-2">
-          {/* Un solo botón y sin `capture`: en Android el selector del sistema ofrece cámara,
-              galería y archivos, y el usuario puede usar su app de cámara habitual. */}
+          {tactil && (
+            <button
+              type="button" onClick={() => camaraRef.current?.click()} disabled={procesando || pending}
+              className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-4 py-3 text-base font-medium text-slate-800 hover:bg-slate-100 disabled:opacity-60"
+            >
+              <span aria-hidden="true" className="text-2xl leading-none">📷</span>
+              Tomar foto
+            </button>
+          )}
           <button
             type="button" onClick={() => archivoRef.current?.click()} disabled={procesando || pending}
             className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-4 py-3 text-base font-medium text-slate-800 hover:bg-slate-100 disabled:opacity-60"
           >
-            <span aria-hidden="true" className="text-2xl leading-none">{tactil ? '📷' : '🖼️'}</span>
-            {tactil ? (preview ? 'Cambiar foto' : 'Agregar foto') : 'Elegir archivo'}
+            <span aria-hidden="true" className="text-2xl leading-none">🖼️</span>
+            {tactil ? 'Elegir de la galería' : 'Elegir archivo'}
           </button>
         </div>
-        {/* Sin atributo name: la foto se envía desde el estado, ya comprimida. */}
+        {/* Sin atributo name: la foto se envía desde el estado, ya comprimida.
+            `capture` abre la cámara directamente en móvil; en PC se ignora. */}
+        <input ref={camaraRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden onChange={onElegir} />
         <input ref={archivoRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={onElegir} />
         {tactil && (
           <p className="mb-0 mt-2 text-sm text-slate-500">
-            Puedes tomar la foto con la cámara o elegir una de tu galería. Si la cámara falla, cierra otras apps e inténtalo de nuevo.
+            Si la cámara falla, cierra otras apps e inténtalo de nuevo, o elige una foto de la galería.
           </p>
         )}
         {procesando && <p role="status" className="mb-0 mt-2 text-base text-slate-600">Procesando la foto…</p>}
