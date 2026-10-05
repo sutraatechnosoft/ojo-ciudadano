@@ -99,7 +99,7 @@ async function comprimirUna(file: File, maxLado: number, calidad: number): Promi
   }
 }
 
-export async function comprimirImagen(file: File, maxLado = 1600, calidad = 0.8): Promise<File> {
+export async function comprimirImagen(file: File, maxLado = 800, calidad = 0.8): Promise<File> {
   if (!file.type.startsWith('image/')) return file
 
   // Si falla (típicamente por falta de memoria), reintenta con tamaños menores
