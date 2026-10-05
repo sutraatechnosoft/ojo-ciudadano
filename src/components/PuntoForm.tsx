@@ -21,6 +21,16 @@ const readonlyCls = 'cursor-not-allowed bg-slate-100 text-slate-700'
 const inputCls =
   'w-full rounded-md border border-slate-300 px-3 py-2 text-base focus:outline-2 focus:outline-blue-600'
 
+// Clave donde se guarda el borrador del reporte por si Chrome recarga la pestaña
+// (pasa en móviles con poca RAM cuando se abre la cámara).
+const CLAVE_BORRADOR = 'ojo-ciudadano:borrador-reporte'
+
+// Pon en true solo mientras depuras con chrome://inspect.
+const DEBUG = false
+const log = (...args: unknown[]) => {
+  if (DEBUG) console.log('[PuntoForm]', ...args)
+}
+
 export default function PuntoForm({
   action,
   subir,
@@ -37,12 +47,17 @@ export default function PuntoForm({
   const [archivo, setArchivo] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [fotoMsg, setFotoMsg] = useState('')
+  const [avisoFoto, setAvisoFoto] = useState('')
   const [procesando, setProcesando] = useState(false)
   const [tactil, setTactil] = useState(false)
   const [movil, setMovil] = useState(false)
   const [moverMapa, setMoverMapa] = useState(false)
   const [categoria, setCategoria] = useState<string>(punto?.categoria ?? '')
-  const camaraRef = useRef<HTMLInputElement>(null)
+  const [lat, setLat] = useState(punto ? Number(punto.latitud).toFixed(6) : '')
+  const [lon, setLon] = useState(punto ? Number(punto.longitud).toFixed(6) : '')
+  const [geoMsg, setGeoMsg] = useState('')
+  const [ubicando, setUbicando] = useState(false)
+  const [borradorListo, setBorradorListo] = useState(false)
   const archivoRef = useRef<HTMLInputElement>(null)
 
   // La foto vive en el estado (ya comprimida), no en el FormData nativo del <input>.
@@ -77,7 +92,8 @@ export default function PuntoForm({
   const [state, formAction, pending] = useActionState<FormState, FormData>(enviar, {})
 
   useEffect(() => {
-    // `tactil`: pantalla táctil (botones de cámara/galería).
+    log('montado', Math.round(performance.now()))
+    // `tactil`: pantalla táctil (texto del botón de foto).
     // `movil`: táctil o pantalla angosta (bloqueo del mapa). Se actualiza si cambia el modo del dispositivo.
     const mqTactil = window.matchMedia('(pointer: coarse)')
     const mqMovil = window.matchMedia('(pointer: coarse), (max-width: 767px)')
@@ -94,6 +110,45 @@ export default function PuntoForm({
     }
   }, [])
 
+  // Restaura el borrador (categoría y ubicación) si la pestaña se recargó. Solo en el formulario de alta.
+  useEffect(() => {
+    if (!punto) {
+      try {
+        const raw = sessionStorage.getItem(CLAVE_BORRADOR)
+        if (raw) {
+          const b = JSON.parse(raw) as { categoria?: string; lat?: string; lon?: string }
+          if (b.categoria && b.categoria in CATEGORIAS) setCategoria(b.categoria)
+          if (b.lat && b.lon && !Number.isNaN(Number(b.lat)) && !Number.isNaN(Number(b.lon))) {
+            setLat(b.lat)
+            setLon(b.lon)
+          }
+          log('borrador restaurado', b)
+        }
+      } catch {
+        // sessionStorage no disponible o JSON dañado: se ignora.
+      }
+    }
+    setBorradorListo(true)
+  }, [punto])
+
+  // Guarda el borrador solo después de restaurarlo, para no pisarlo con valores vacíos.
+  useEffect(() => {
+    if (punto || !borradorListo) return
+    try {
+      sessionStorage.setItem(CLAVE_BORRADOR, JSON.stringify({ categoria, lat, lon }))
+    } catch {
+      // Sin almacenamiento: no pasa nada.
+    }
+  }, [punto, borradorListo, categoria, lat, lon])
+
+  // Al enviar con éxito, el borrador ya no hace falta.
+  useEffect(() => {
+    if (!state.ok) return
+    try {
+      sessionStorage.removeItem(CLAVE_BORRADOR)
+    } catch {}
+  }, [state.ok])
+
   useEffect(() => {
     if (!archivo) return setPreview(null)
     const url = URL.createObjectURL(archivo)
@@ -101,27 +156,42 @@ export default function PuntoForm({
     return () => URL.revokeObjectURL(url)
   }, [archivo])
 
+  // Chrome dispara `cancel` cuando se cierra el selector/cámara sin devolver ninguna foto
+  // (incluye el caso en que la cámara falla por falta de memoria).
+  useEffect(() => {
+    const input = archivoRef.current
+    if (!input) return
+    const alCancelar = () => {
+      log('cancel: no llegó ninguna foto')
+      setAvisoFoto(
+        'No se recibió ninguna foto. Si la cámara falló, cierra otras apps y vuelve a intentarlo, o toma la foto con tu cámara normal y elígela desde la galería.'
+      )
+    }
+    input.addEventListener('cancel', alCancelar)
+    return () => input.removeEventListener('cancel', alCancelar)
+  }, [])
+
   const onElegir = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target
     const f = input.files?.[0]
     input.value = ''
+    log('onElegir', f?.size, f?.type)
     if (!f) return
     setFotoMsg('')
+    setAvisoFoto('')
     setProcesando(true)
     try {
       const c = await comprimirImagen(f)
       if (c.size > MAX_BYTES_CLIENTE) throw new Error('muy pesada')
       setArchivo(c)
     } catch {
-      setFotoMsg('No se pudo procesar la imagen. Usa una foto JPG, PNG o WebP.')
+      setFotoMsg(
+        'No se pudo procesar la foto. Cierra otras apps (o la grabación de pantalla) e inténtalo de nuevo, o elige otra foto de la galería. Se aceptan JPG, PNG y WebP.'
+      )
     } finally {
       setProcesando(false)
     }
   }
-  const [lat, setLat] = useState(punto ? Number(punto.latitud).toFixed(6) : '')
-  const [lon, setLon] = useState(punto ? Number(punto.longitud).toFixed(6) : '')
-  const [geoMsg, setGeoMsg] = useState('')
-  const [ubicando, setUbicando] = useState(false)
 
   const latNum = lat !== '' && !Number.isNaN(Number(lat)) ? Number(lat) : null
   const lonNum = lon !== '' && !Number.isNaN(Number(lon)) ? Number(lon) : null
@@ -269,28 +339,25 @@ export default function PuntoForm({
           </div>
         )}
         <div className="flex flex-wrap gap-2">
-          {tactil && (
-            <button
-              type="button" onClick={() => camaraRef.current?.click()} disabled={procesando || pending}
-              className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-4 py-3 text-base font-medium text-slate-800 hover:bg-slate-100 disabled:opacity-60"
-            >
-              <span aria-hidden="true" className="text-2xl leading-none">📷</span>
-              Tomar foto
-            </button>
-          )}
+          {/* Un solo botón y sin `capture`: en Android el selector del sistema ofrece cámara,
+              galería y archivos, y el usuario puede usar su app de cámara habitual. */}
           <button
             type="button" onClick={() => archivoRef.current?.click()} disabled={procesando || pending}
             className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-4 py-3 text-base font-medium text-slate-800 hover:bg-slate-100 disabled:opacity-60"
           >
-            <span aria-hidden="true" className="text-2xl leading-none">🖼️</span>
-            {tactil ? 'Elegir de la galería' : 'Elegir archivo'}
+            <span aria-hidden="true" className="text-2xl leading-none">{tactil ? '📷' : '🖼️'}</span>
+            {tactil ? (preview ? 'Cambiar foto' : 'Agregar foto') : 'Elegir archivo'}
           </button>
         </div>
-        {/* Sin atributo name: la foto se envía desde el estado, ya comprimida.
-            `capture` abre la cámara directamente en móvil; en PC se ignora. */}
-        <input ref={camaraRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden onChange={onElegir} />
+        {/* Sin atributo name: la foto se envía desde el estado, ya comprimida. */}
         <input ref={archivoRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={onElegir} />
+        {tactil && (
+          <p className="mb-0 mt-2 text-sm text-slate-500">
+            Puedes tomar la foto con la cámara o elegir una de tu galería. Si la cámara falla, cierra otras apps e inténtalo de nuevo.
+          </p>
+        )}
         {procesando && <p role="status" className="mb-0 mt-2 text-base text-slate-600">Procesando la foto…</p>}
+        {avisoFoto && !fotoMsg && <p role="status" className="mb-0 mt-2 text-base text-amber-700">{avisoFoto}</p>}
         {fotoMsg && <p role="alert" className="mb-0 mt-2 text-base text-red-700">{fotoMsg}</p>}
       </div>
 
