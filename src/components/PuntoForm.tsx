@@ -372,6 +372,14 @@ export default function PuntoForm({
 
       {publico && latNum !== null && lonNum !== null && archivo && <Captcha resetKey={state} />}
 
+      {publico && (
+        <p className="m-0 text-sm text-slate-600">
+          Al enviar aceptas los <Link href="/terminos" className="underline">Términos de uso</Link> y la{' '}
+          <Link href="/privacidad" className="underline">Política de privacidad</Link>. La foto y el punto se publicarán en el mapa
+          tras la verificación.
+        </p>
+      )}
+
       <div className="flex items-center gap-3">
         <button
           type="submit" disabled={pending || procesando || !listo}
